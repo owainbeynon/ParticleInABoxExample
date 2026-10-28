@@ -1,423 +1,335 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quantum Particle in a Box Simulator</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            cyan: {
-              400: '#22d3ee',
-              500: '#06b6d4',
-              900: '#164e63',
-            },
-            slate: {
-              850: '#0f172a',
-              900: '#090d16',
-              950: '#030712'
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantum Mechanics: Particle in a Box Explorer</title>
 
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  
-  <!-- KaTeX for Math Rendering -->
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- KaTeX for LaTeX rendering -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
-  
-  <!-- Three.js for 3D Surface Rendering -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background-color: #030712;
-      color: #f3f4f6;
+      background-color: #0f172a;
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
     }
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .math-expr {
+      font-size: 1.1em;
     }
-    .glass-card {
-      background: rgba(30, 41, 59, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
+    .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
-      height: 6px;
     }
-    ::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1e293b;
     }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(6, 182, 212, 0.4);
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
       border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(6, 182, 212, 0.7);
-    }
-    input[type=range] {
-      accent-color: #06b6d4;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-100 antialiased selection:bg-cyan-500 selection:text-black">
+<body class="min-h-screen flex flex-col justify-between">
 
-  <!-- Header Navigation -->
-  <header class="glass-panel sticky top-0 z-50 px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between border-b border-slate-800 gap-4">
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex flex-wrap justify-between items-center shadow-lg">
     <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-        <span class="font-bold text-slate-950 text-xl">Ψ</span>
+      <div class="bg-indigo-600 text-white p-2 rounded-lg font-bold text-xl shadow-md shadow-indigo-500/20">
+        &Psi;
       </div>
       <div>
-        <h1 class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-          Quantum Particle in a Box
-        </h1>
-        <p class="text-xs text-slate-400">1D & 2D Infinite Potential Well Interactive Visualizer</p>
+        <h1 class="text-xl font-bold text-slate-100 tracking-tight">Particle in a Box Visualizer</h1>
+        <p class="text-xs text-slate-400">1D Infinite Potential Well Interactive Explorer</p>
       </div>
     </div>
 
-    <!-- Scenarios / Presets Dropdown & Controls -->
-    <div class="flex items-center space-x-3 text-sm">
-      <label class="text-slate-400 flex items-center gap-1.5 text-xs"><i class="fa-solid fa-compass text-cyan-400"></i> Preset:</label>
-      <select id="presetSelect" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-cyan-500 transition-colors">
-        <option value="default">1D Ground State Electron (1 nm)</option>
-        <option value="beats">1D Quantum Beats (Superposition n=1,2)</option>
-        <option value="high_n">1D High State (n=8 Classical Limit)</option>
-        <option value="2d_deg">2D Degenerate States (nx=1, ny=2)</option>
-        <option value="2d_aniso">2D Rectangular Box (Lx ≠ Ly)</option>
-        <option value="quantum_dot">Semiconductor Quantum Dot (CdSe)</option>
-      </select>
-      <button id="shareBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-400 px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all text-xs font-semibold">
-        <i class="fa-solid fa-share-nodes"></i> Share State
+    <!-- Navigation / Mode Status -->
+    <div class="flex items-center space-x-3 mt-2 sm:mt-0">
+      <button id="nav-trial-btn" onclick="switchView('trial')" class="px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30">
+        1. Wavefunction Test
+      </button>
+      <button id="nav-sim-btn" onclick="switchView('simulation')" class="px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200">
+        2. Quantum Simulation
       </button>
     </div>
   </header>
 
-  <!-- Main Content Layout -->
-  <main class="flex-1 p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1800px] w-full mx-auto">
-    
-    <!-- LEFT SIDEBAR: Controls & Configuration -->
-    <aside class="lg:col-span-4 xl:col-span-3 space-y-5">
-      
-      <!-- System Configuration Card -->
-      <div class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
-        <h2 class="text-base font-semibold text-cyan-400 flex items-center gap-2 border-b border-slate-800 pb-2">
-          <i class="fa-solid fa-sliders"></i> System Parameters
-        </h2>
+  <!-- Main Content Container -->
+  <main class="flex-grow p-4 md:p-6 max-w-7xl mx-auto w-full">
 
-        <!-- Dimension Switch -->
-        <div>
-          <label class="text-xs font-medium text-slate-400 block mb-1.5">Dimension Setup</label>
-          <div class="grid grid-cols-2 gap-2 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
-            <button id="dim1D" class="py-1.5 rounded-lg font-medium text-xs text-center transition-all bg-cyan-500 text-slate-950 font-semibold shadow">1D Line</button>
-            <button id="dim2D" class="py-1.5 rounded-lg font-medium text-xs text-center transition-all text-slate-400 hover:text-slate-200">2D Box</button>
-          </div>
+    <!-- VIEW 1: TRIAL WAVEFUNCTION GATE -->
+    <section id="view-trial" class="space-y-6">
+
+      <!-- Banner -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 shadow-xl backdrop-blur-sm">
+        <h2 class="text-2xl font-bold text-indigo-400 mb-2">Finding Valid Wavefunctions for the Infinite Potential Well</h2>
+        <p class="text-slate-300 leading-relaxed text-sm md:text-base">
+          Inside an infinite potential well of length <span class="text-amber-300 font-mono">L</span> (where <span class="text-amber-300 font-mono">V(x) = 0</span> for <span class="text-amber-300 font-mono">0 &lt; x &lt; L</span> and <span class="text-amber-300 font-mono">V(x) = &infty;</span> outside), the wavefunction must go to zero at the walls to satisfy continuity:
+        </p>
+        <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-lg my-4 text-center text-lg text-emerald-400 font-mono">
+          \psi(0) = 0 \quad \text{and} \quad \psi(L) = 0
         </div>
+        <p class="text-slate-400 text-sm">
+          Select candidate mathematical functions below to test whether they satisfy these essential quantum boundary conditions.
+        </p>
+      </div>
 
-        <!-- Particle Mass Selection -->
-        <div>
-          <label class="text-xs font-medium text-slate-400 block mb-1">Particle Mass</label>
-          <select id="particleSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-500">
-            <option value="electron">Electron (m_e ≈ 9.109 × 10⁻³¹ kg)</option>
-            <option value="proton">Proton (m_p ≈ 1836 m_e)</option>
-            <option value="neutron">Neutron (m_n ≈ 1838 m_e)</option>
-            <option value="muon">Muon (m_μ ≈ 207 m_e)</option>
-            <option value="custom">Custom Mass</option>
-          </select>
-          <div id="customMassContainer" class="hidden mt-2 flex items-center gap-2">
-            <input type="number" id="customMassInput" value="1.0" step="0.1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs">
-            <span class="text-xs text-slate-400">× $m_e$</span>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Controls Column -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 space-y-6 shadow-xl">
+          <h3 class="text-lg font-semibold text-slate-200 border-b border-slate-700 pb-2">Select Trial Wavefunction</h3>
+
+          <div class="space-y-3">
+            <button onclick="selectTrialFunction('sin')" id="btn-trial-sin" class="w-full text-left p-4 rounded-xl border border-indigo-500/50 bg-indigo-950/40 hover:bg-indigo-900/50 transition flex items-center justify-between group shadow-md">
+              <div>
+                <div class="font-bold text-indigo-300 group-hover:text-indigo-200">\psi(x) = A \sin(kx)</div>
+                <div class="text-xs text-slate-400 mt-1">Sinusoidal Trial Function</div>
+              </div>
+              <span id="badge-trial-sin" class="text-xs px-2.5 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">Active</span>
+            </button>
+
+            <button onclick="selectTrialFunction('cos')" id="btn-trial-cos" class="w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-900/50 hover:bg-slate-800 transition flex items-center justify-between group">
+              <div>
+                <div class="font-bold text-slate-300 group-hover:text-slate-100">\psi(x) = A \cos(kx)</div>
+                <div class="text-xs text-slate-400 mt-1">Cosine Trial Function</div>
+              </div>
+              <span id="badge-trial-cos" class="text-xs px-2.5 py-1 rounded-full font-bold bg-slate-800 text-slate-500">Select</span>
+            </button>
+
+            <button onclick="selectTrialFunction('exp')" id="btn-trial-exp" class="w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-900/50 hover:bg-slate-800 transition flex items-center justify-between group">
+              <div>
+                <div class="font-bold text-slate-300 group-hover:text-slate-100">\psi(x) = A e^{kx}</div>
+                <div class="text-xs text-slate-400 mt-1">Real Exponential Trial Function</div>
+              </div>
+              <span id="badge-trial-exp" class="text-xs px-2.5 py-1 rounded-full font-bold bg-slate-800 text-slate-500">Select</span>
+            </button>
           </div>
-        </div>
 
-        <!-- Box Dimensions (Lx, Ly) -->
-        <div class="space-y-3">
-          <div>
-            <div class="flex justify-between items-center text-xs mb-1">
-              <span class="text-slate-300 font-medium">Box Width ($L_x$)</span>
-              <span id="lxVal" class="text-cyan-400 font-mono">1.00 nm</span>
+          <!-- Parameter Adjustments -->
+          <div class="space-y-4 pt-4 border-t border-slate-700">
+            <div>
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Wavenumber Parameter (k)</span>
+                <span id="trial-k-val" class="font-mono text-indigo-400">1.00</span>
+              </div>
+              <input type="range" id="trial-k" min="0.5" max="5" step="0.1" value="1" oninput="updateTrialPlot()" class="w-full accent-indigo-500 bg-slate-700 rounded-lg">
             </div>
-            <div class="flex items-center gap-2">
-              <input type="range" id="lxRange" min="0.1" max="10" step="0.05" value="1.0" class="w-full">
-              <select id="unitSelect" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px]">
+          </div>
+
+          <!-- Action Bar -->
+          <div class="pt-4 border-t border-slate-700">
+            <button id="btn-proceed-sim" onclick="switchView('simulation')" class="w-full py-3 px-4 rounded-xl font-bold text-white transition-all shadow-lg flex items-center justify-center space-x-2 bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30">
+              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span>Proceed to Solutions</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Plot and Verdict Column -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Canvas Plot -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 shadow-xl relative">
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
+              <span>Boundary Condition Analysis</span>
+              <span class="text-xs normal-case text-slate-500">Box width L = 1.0</span>
+            </h3>
+            <div class="h-64 w-full relative">
+              <canvas id="trialChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Boundary Condition Check Status -->
+          <div id="trial-verdict-box" class="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-6 shadow-xl space-y-3">
+            <div class="flex items-center space-x-3">
+              <div id="trial-status-icon" class="text-emerald-400 text-2xl font-bold">&check;</div>
+              <h4 id="trial-status-title" class="text-lg font-bold text-emerald-300">Valid Wavefunction Solution</h4>
+            </div>
+            <p id="trial-status-desc" class="text-slate-300 text-sm leading-relaxed">
+              Sine naturally satisfies <span class="font-mono text-emerald-400">\psi(0) = \sin(0) = 0</span>. By setting <span class="font-mono text-emerald-400">k_n L = n\pi</span>, it also satisfies <span class="font-mono text-emerald-400">\psi(L) = \sin(n\pi) = 0</span>, producing quantized energy states!
+            </p>
+            <div id="trial-math-explanation" class="text-xs bg-slate-900/80 p-3 rounded-lg border border-slate-800 font-mono text-slate-300">
+              \psi_n(x) = \sqrt{\frac{2}{L}} \sin\left(\frac{n\pi x}{L}\right) \quad \text{for } n = 1, 2, 3, \dots
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- VIEW 2: QUANTUM SIMULATION (1D) -->
+    <section id="view-simulation" class="space-y-6 hidden">
+
+      <!-- Control Panel -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 shadow-xl">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+
+          <!-- Quantum Number n -->
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Quantum Number (n)</label>
+            <div class="flex items-center space-x-3">
+              <input type="range" id="sim-n-slider" min="1" max="10" step="1" value="1" oninput="updateSimulation()" class="w-full accent-indigo-500 bg-slate-700 rounded-lg">
+              <span id="sim-n-val" class="font-mono text-xl font-bold text-indigo-400 min-w-[2rem] text-center">1</span>
+            </div>
+          </div>
+
+          <!-- Well Width L -->
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Box Width (L)</label>
+            <div class="flex items-center space-x-2">
+              <input type="number" id="sim-L-val" value="1.0" step="0.1" min="0.1" max="10" onchange="updateSimulation()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-indigo-300 font-mono font-bold focus:outline-none focus:border-indigo-500">
+              <select id="sim-L-unit" onchange="updateSimulation()" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-slate-300 text-sm focus:outline-none focus:border-indigo-500">
                 <option value="nm">nm</option>
-                <option value="A">Å</option>
+                <option value="angstrom">&Aring;</option>
                 <option value="pm">pm</option>
               </select>
             </div>
           </div>
 
-          <div id="lyControlContainer" class="hidden">
-            <div class="flex justify-between items-center text-xs mb-1">
-              <span class="text-slate-300 font-medium">Box Height ($L_y$)</span>
-              <span id="lyVal" class="text-cyan-400 font-mono">1.00 nm</span>
-            </div>
-            <input type="range" id="lyRange" min="0.1" max="10" step="0.05" value="1.0" class="w-full">
-          </div>
-        </div>
-
-        <!-- Quantum Numbers Controls -->
-        <div class="border-t border-slate-800 pt-3 space-y-3">
-          <div id="singleStateControls">
-            <div class="flex justify-between items-center text-xs mb-1">
-              <span class="text-slate-300 font-medium" id="nLabel">Quantum Number ($n$)</span>
-              <span id="nVal" class="text-cyan-400 font-mono font-bold text-sm">1</span>
-            </div>
-            <input type="range" id="nRange" min="1" max="15" step="1" value="1" class="w-full">
-            
-            <div id="nyControlContainer" class="hidden mt-2">
-              <div class="flex justify-between items-center text-xs mb-1">
-                <span class="text-slate-300 font-medium">Quantum Number ($n_y$)</span>
-                <span id="nyVal" class="text-cyan-400 font-mono font-bold text-sm">1</span>
-              </div>
-              <input type="range" id="nyRange" min="1" max="15" step="1" value="1" class="w-full">
-            </div>
-          </div>
-        </div>
-
-        <!-- Superposition Toggle & Controls -->
-        <div id="superpositionSection" class="border-t border-slate-800 pt-3 space-y-3">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-semibold text-slate-300 cursor-pointer flex items-center gap-2">
-              <input type="checkbox" id="superpositionToggle" class="rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-0">
-              <span>Enable Superposition</span>
-            </label>
-            <span class="text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-1.5 py-0.5 rounded font-mono">Ψ = c₁|n₁⟩ + c₂|n₂⟩</span>
-          </div>
-
-          <div id="superpositionControls" class="hidden space-y-3 pl-2 border-l-2 border-cyan-500/30">
-            <div>
-              <div class="flex justify-between items-center text-xs mb-1">
-                <span class="text-slate-400">Second State ($n_2$)</span>
-                <span id="n2Val" class="text-cyan-400 font-mono">2</span>
-              </div>
-              <input type="range" id="n2Range" min="1" max="15" step="1" value="2" class="w-full">
-            </div>
-
-            <div>
-              <div class="flex justify-between items-center text-xs mb-1">
-                <span class="text-slate-400">Mix Ratio ($c_1^2 : c_2^2$)</span>
-                <span id="mixVal" class="text-cyan-400 font-mono">0.50 : 0.50</span>
-              </div>
-              <input type="range" id="mixRange" min="0" max="1" step="0.02" value="0.5" class="w-full">
-            </div>
-
-            <div>
-              <div class="flex justify-between items-center text-xs mb-1">
-                <span class="text-slate-400">Relative Phase ($\phi$)</span>
-                <span id="phaseVal" class="text-cyan-400 font-mono">0.00 rad</span>
-              </div>
-              <input type="range" id="phaseRange" min="0" max="6.28" step="0.1" value="0" class="w-full">
-            </div>
-          </div>
-        </div>
-
-        <!-- Display Options -->
-        <div class="border-t border-slate-800 pt-3 space-y-2">
-          <label class="text-xs font-medium text-slate-400 block">Visualization Display</label>
-          <div class="grid grid-cols-3 gap-1.5 text-xs">
-            <button id="dispPsi" class="p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center">$\psi(x)$</button>
-            <button id="dispProb" class="p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center">$|\psi|^2$</button>
-            <button id="dispBoth" class="p-1.5 rounded-lg border border-cyan-500 bg-cyan-950/40 text-cyan-400 text-center font-semibold">Both</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Time Animation Controls -->
-      <div class="glass-panel rounded-2xl p-4 shadow-xl space-y-3">
-        <h3 class="text-xs font-semibold text-slate-300 flex items-center justify-between">
-          <span><i class="fa-solid fa-clock text-cyan-400"></i> Time Evolution $\Psi(t)$</span>
-          <span id="timeVal" class="font-mono text-[11px] text-cyan-400">t = 0.00 fs</span>
-        </h3>
-        <div class="flex items-center gap-2">
-          <button id="playPauseBtn" class="flex-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold py-1.5 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-cyan-500/20">
-            <i class="fa-solid fa-pause"></i> <span id="playPauseText">Pause</span>
-          </button>
-          <button id="resetTimeBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-1.5 rounded-lg text-xs border border-slate-700" title="Reset Time">
-            <i class="fa-solid fa-rotate-left"></i>
-          </button>
-        </div>
-        <div>
-          <div class="flex justify-between items-center text-[11px] text-slate-400 mb-1">
-            <span>Simulation Speed</span>
-            <span id="speedVal" class="font-mono text-cyan-400">1.0x</span>
-          </div>
-          <input type="range" id="speedRange" min="0.1" max="5" step="0.1" value="1" class="w-full">
-        </div>
-      </div>
-    </aside>
-
-    <!-- RIGHT / CENTER: Main Visualizations & Analytics -->
-    <section class="lg:col-span-8 xl:col-span-9 space-y-6">
-
-      <!-- TOP VISUALIZATION PANEL -->
-      <div class="glass-panel rounded-2xl p-5 shadow-2xl relative min-h-[440px] flex flex-col justify-between">
-        
-        <!-- View Headers & Controls -->
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-2 z-10">
+          <!-- Particle Mass Selection -->
           <div>
-            <h2 id="viewTitleText" class="text-lg font-semibold text-slate-100 flex items-center gap-2">
-              <i class="fa-solid fa-wave-square text-cyan-400"></i> 1D Wavefunction & Probability Density
-            </h2>
-            <p id="viewSubtitle" class="text-xs text-slate-400">Stationary state spatial distribution with time-dependent phase evolution</p>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Particle</label>
+            <select id="sim-particle" onchange="updateSimulation()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 text-sm focus:outline-none focus:border-indigo-500">
+              <option value="electron">Electron (m_e)</option>
+              <option value="proton">Proton (m_p)</option>
+              <option value="neutron">Neutron (m_n)</option>
+              <option value="muon">Muon (207 m_e)</option>
+            </select>
           </div>
 
-          <div class="flex items-center gap-2 text-xs">
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300">
-              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span> $\psi(x)$ Wavefunction
-            </span>
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> $|\psi(x)|^2$ Density
-            </span>
-          </div>
-        </div>
-
-        <!-- Canvas Visualizations Area -->
-        <div class="relative w-full flex-1 min-h-[350px] my-2 bg-slate-950/80 rounded-xl border border-slate-800/80 overflow-hidden flex items-center justify-center">
-          
-          <!-- 1D Main Canvas -->
-          <canvas id="canvas1D" class="w-full h-full absolute inset-0 block"></canvas>
-
-          <!-- 2D Canvas & ThreeJS container -->
-          <div id="container2D" class="hidden absolute inset-0 w-full h-full grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
-            <div class="relative bg-slate-900/90 rounded-lg overflow-hidden border border-slate-800 flex flex-col">
-              <span class="absolute top-2 left-2 z-10 text-[11px] font-semibold bg-slate-950/80 px-2 py-0.5 rounded text-cyan-400 border border-slate-800">2D Intensity Heatmap ($|\psi|^2$)</span>
-              <canvas id="heatmap2D" class="w-full h-full block"></canvas>
+          <!-- Time Evolution Play / Speed Controls -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Animation Control</label>
+              <span id="speed-label" class="text-xs text-indigo-400 font-mono">1.0x</span>
             </div>
-            <div class="relative bg-slate-900/90 rounded-lg overflow-hidden border border-slate-800 flex flex-col">
-              <span class="absolute top-2 left-2 z-10 text-[11px] font-semibold bg-slate-950/80 px-2 py-0.5 rounded text-cyan-400 border border-slate-800">3D Surface View (Drag to rotate)</span>
-              <div id="three3DContainer" class="w-full h-full"></div>
+            <div class="flex items-center space-x-2">
+              <button id="btn-play-pause" onclick="toggleAnimation()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition shadow-md shadow-indigo-600/30 flex-shrink-0">
+                Pause
+              </button>
+              <input type="range" id="sim-speed" min="0.1" max="3" step="0.1" value="1" oninput="updateSpeedLabel()" class="w-full accent-indigo-500 bg-slate-700 rounded-lg">
             </div>
           </div>
 
-        </div>
-
-        <!-- Bottom Canvas Metrics Overlay -->
-        <div class="flex flex-wrap items-center justify-between text-xs text-slate-400 border-t border-slate-800/60 pt-3 gap-2">
-          <div class="flex items-center gap-4">
-            <span>Nodes: <strong id="nodeCount" class="text-cyan-400">0</strong></span>
-            <span>Antinodes: <strong id="antinodeCount" class="text-cyan-400">1</strong></span>
-            <span id="parityLabel">Parity: <strong class="text-slate-200">Even (Symmetric)</strong></span>
-          </div>
-          <div class="text-[11px]">
-            Infinite boundary conditions: <span class="font-mono text-cyan-400">$\psi(0) = \psi(L) = 0$</span>
-          </div>
         </div>
       </div>
 
-      <!-- LOWER ANALYTICS: Energy Spectrum & Quantum Observables Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Main Visualizations Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Energy Level Diagram & Calculations -->
-        <div class="lg:col-span-5 glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
-          <div>
-            <h3 class="text-sm font-semibold text-cyan-400 border-b border-slate-800 pb-2 flex items-center justify-between">
-              <span><i class="fa-solid fa-layer-group"></i> Quantized Energy Spectrum</span>
-              <span class="text-[11px] text-slate-400 font-normal">Eigenvalues $E_n$</span>
-            </h3>
-            
-            <div class="grid grid-cols-2 gap-3 mt-3">
-              <!-- Energy Level Canvas -->
-              <div class="h-48 bg-slate-950 rounded-xl border border-slate-800 relative overflow-hidden">
-                <canvas id="energyCanvas" class="w-full h-full block"></canvas>
+        <!-- Left Column: Wavefunction & Probability Density plots -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Wavefunction Plot -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 shadow-xl relative">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Wavefunction \psi_n(x, t)</h3>
+              <div class="flex items-center space-x-4 text-xs">
+                <span class="flex items-center space-x-1">
+                  <span class="w-3 h-3 rounded-full bg-indigo-400 inline-block"></span>
+                  <span class="text-slate-400">Re(\Psi)</span>
+                </span>
+                <span class="flex items-center space-x-1">
+                  <span class="w-3 h-3 rounded-full bg-pink-500 inline-block"></span>
+                  <span class="text-slate-400">Im(\Psi)</span>
+                </span>
               </div>
-
-              <!-- Energy Readouts & Transitions -->
-              <div class="space-y-3 flex flex-col justify-center">
-                <div class="glass-card p-2.5 rounded-xl border-l-4 border-l-cyan-400">
-                  <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">Active State Energy</span>
-                  <div id="energyeV" class="text-lg font-bold font-mono text-cyan-400">0.376 eV</div>
-                  <div id="energyJoules" class="text-[10px] font-mono text-slate-400">6.03e-20 J</div>
-                </div>
-
-                <div class="glass-card p-2.5 rounded-xl border-l-4 border-l-purple-400">
-                  <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">Photon Transition ($n \to n-1$)</span>
-                  <div id="transitionWavelength" class="text-sm font-bold font-mono text-purple-300">λ = -- nm</div>
-                  <div id="transitionRegion" class="text-[10px] text-purple-400 font-medium">Ground State</div>
-                </div>
-              </div>
+            </div>
+            <div class="h-64 w-full relative">
+              <canvas id="wavefunctionChart"></canvas>
             </div>
           </div>
 
-          <!-- Formula Card -->
-          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-xs">
-            <span class="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-1">Energy Formula</span>
-            <div id="energyFormulaDisplay" class="overflow-x-auto text-center py-1">
-              $$E_n = \frac{n^2 h^2}{8 m L^2}$$
+          <!-- Probability Density Plot -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 shadow-xl relative">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">Probability Density |\psi_n(x)|^2</h3>
+              <span id="node-count-badge" class="text-xs bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 px-3 py-1 rounded-full font-mono">
+                Nodes: 0
+              </span>
+            </div>
+            <div class="h-64 w-full relative">
+              <canvas id="densityChart"></canvas>
             </div>
           </div>
+
         </div>
 
-        <!-- Quantum Observables & Uncertainty Principle -->
-        <div class="lg:col-span-7 glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
-          <h3 class="text-sm font-semibold text-cyan-400 border-b border-slate-800 pb-2 flex items-center justify-between">
-            <span><i class="fa-solid fa-calculator"></i> Quantum Observables & Uncertainty</span>
-            <span class="text-[11px] text-emerald-400 font-normal"><i class="fa-solid fa-check-circle"></i> Heisenberg Verified</span>
-          </h3>
+        <!-- Right Column: Analytical & Math Panel -->
+        <div class="space-y-6">
 
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <!-- Position Expectation -->
-            <div class="glass-card p-3 rounded-xl">
-              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Position Expectation $\langle x \rangle$</span>
-              <div id="expX" class="text-base font-bold font-mono text-cyan-300 mt-1">0.50 nm</div>
-              <span class="text-[10px] text-slate-500">Center of the box</span>
+          <!-- Wavefunction Expression -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 shadow-xl space-y-3">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Spatial Wavefunction</h3>
+            <div id="math-wavefunction-expr" class="p-4 bg-slate-900/80 border border-slate-800 rounded-lg text-indigo-300 text-center overflow-x-auto">
+              <!-- Rendered via KaTeX -->
             </div>
+          </div>
 
-            <!-- Position Uncertainty -->
-            <div class="glass-card p-3 rounded-xl">
-              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Position Uncertainty $\sigma_x$</span>
-              <div id="sigmaX" class="text-base font-bold font-mono text-cyan-300 mt-1">0.18 nm</div>
-              <span class="text-[10px] text-slate-500">Spatial spread</span>
-            </div>
+          <!-- Energy Expressions Panel -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 shadow-xl space-y-4">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Energy</h3>
 
-            <!-- Momentum Expectation -->
-            <div class="glass-card p-3 rounded-xl">
-              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Momentum $\langle p \rangle$</span>
-              <div id="expP" class="text-base font-bold font-mono text-cyan-300 mt-1">0.00 kg·m/s</div>
-              <span class="text-[10px] text-slate-500">Standing wave symmetry</span>
-            </div>
-
-            <!-- Momentum Uncertainty -->
-            <div class="glass-card p-3 rounded-xl">
-              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Momentum Uncertainty $\sigma_p$</span>
-              <div id="sigmaP" class="text-base font-bold font-mono text-purple-300 mt-1">3.3e-25 N·s</div>
-              <span class="text-[10px] text-slate-500">Root mean square</span>
-            </div>
-
-            <!-- Heisenberg Product -->
-            <div class="col-span-2 sm:col-span-2 glass-card p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/10">
-              <div class="flex justify-between items-center">
-                <span class="text-[10px] text-emerald-400 font-semibold uppercase">Heisenberg Product $\sigma_x \cdot \sigma_p$</span>
-                <span id="heisenbergRatio" class="text-[10px] bg-emerald-900/60 text-emerald-300 px-2 py-0.5 rounded font-mono">1.14 × (ℏ/2)</span>
+            <!-- General Energy Formula -->
+            <div>
+              <div class="text-xs text-slate-400 mb-1">General Energy Eigenvalue Formula:</div>
+              <div id="math-general-energy-formula" class="p-3 bg-slate-900/80 border border-slate-800 rounded-lg text-slate-200 text-center text-sm">
+                <!-- KaTeX -->
               </div>
-              <div id="heisenbergVal" class="text-base font-bold font-mono text-emerald-300 mt-1">0.60 ℏ</div>
-              <div class="text-[10px] text-slate-400 mt-0.5">Satisfies $\sigma_x \sigma_p \ge \frac{\hbar}{2}$ ($\frac{\hbar}{2} \approx 5.27 \times 10^{-35}\text{ J·s}$)</div>
+            </div>
+
+            <!-- Active Substituted Energy Expression -->
+            <div>
+              <div class="text-xs text-slate-400 mb-1">Active State Energy Derivation:</div>
+              <div id="math-substituted-energy" class="p-3 bg-slate-900/80 border border-slate-800 rounded-lg text-amber-300 text-center text-sm font-mono overflow-x-auto">
+                <!-- KaTeX -->
+              </div>
+            </div>
+
+            <!-- Energy Values Display -->
+            <div class="grid grid-cols-2 gap-3 pt-2">
+              <div class="bg-slate-900/90 border border-slate-700/80 p-3 rounded-lg text-center">
+                <div class="text-xs text-slate-400">Energy (eV)</div>
+                <div id="val-energy-ev" class="text-lg font-bold font-mono text-emerald-400 mt-1">0.00 eV</div>
+              </div>
+              <div class="bg-slate-900/90 border border-slate-700/80 p-3 rounded-lg text-center">
+                <div class="text-xs text-slate-400">Energy (Joules)</div>
+                <div id="val-energy-j" class="text-xs font-bold font-mono text-cyan-400 mt-2">0.00 J</div>
+              </div>
             </div>
           </div>
 
-          <!-- Mathematical Wavefunction Display -->
-          <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 text-xs">
-            <span class="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider mb-1">State Wavefunction Equation</span>
-            <div id="wavefunctionFormulaDisplay" class="overflow-x-auto text-center py-1 font-mono text-cyan-300 text-sm">
-              $$\psi_n(x) = \sqrt{\frac{2}{L}} \sin\left(\frac{n \pi x}{L}\right)$$
+          <!-- Energy Spacing Panel -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 shadow-xl space-y-4">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Energy Level Spacing (\Delta E)</h3>
+
+            <div>
+              <div class="text-xs text-slate-400 mb-1">Formula for distance to next energy level:</div>
+              <div id="math-delta-e-formula" class="p-3 bg-slate-900/80 border border-slate-800 rounded-lg text-slate-200 text-center text-sm">
+                <!-- KaTeX -->
+              </div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-700/80 p-3 rounded-lg text-center space-y-1">
+              <div class="text-xs text-slate-400">Spacing to next level (\Delta E_{n+1, n})</div>
+              <div id="val-delta-e-ev" class="text-base font-bold font-mono text-indigo-300">0.00 eV</div>
+              <div id="val-delta-e-j" class="text-xs font-mono text-slate-400">0.00 J</div>
             </div>
           </div>
+
         </div>
 
       </div>
@@ -426,776 +338,436 @@
 
   </main>
 
-  <!-- Footer Info -->
-  <footer class="glass-panel mt-8 py-4 px-6 text-center text-xs text-slate-500 border-t border-slate-800">
-    Quantum Mechanics Interactive Simulator &bull; Designed for Physics & Physical Chemistry Education &bull; Hosted on GitHub Pages
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 bg-slate-900/80 py-4 px-6 text-center text-xs text-slate-500">
+    Quantum Mechanics Educational Tool &bull; 1D Particle in an Infinite Potential Box
   </footer>
 
-  <!-- MAIN SIMULATION LOGIC -->
+  <!-- Application Logic -->
   <script>
-    // --- PHYSICAL CONSTANTS (SI Units) ---
-    const H_PLANCK = 6.62607015e-34; // J s
-    const H_BAR = H_PLANCK / (2 * Math.PI); // J s
-    const MASS_ELECTRON = 9.1093837015e-31; // kg
-    const MASS_PROTON = 1.67262192369e-27; // kg
-    const MASS_NEUTRON = 1.67492749804e-27; // kg
-    const MASS_MUON = 207 * MASS_ELECTRON; // kg
-    const EV_TO_JOULES = 1.602176634e-19;
-    const SPEED_OF_LIGHT = 299792458; // m/s
-
-    // --- APPLICATION STATE ---
-    const state = {
-      dimension: '1D', // '1D' or '2D'
-      particleMass: MASS_ELECTRON,
-      massMultiplier: 1.0,
-      lx: 1.0e-9, // meters (1 nm)
-      ly: 1.0e-9, // meters
-      unitScale: 1.0e-9,
-      unitName: 'nm',
-      n1: 1,
-      ny1: 1,
-      // Superposition state parameters
-      isSuperposition: false,
-      n2: 2,
-      mixRatio: 0.5, // c1^2 = mixRatio, c2^2 = 1 - mixRatio
-      phase: 0.0, // radians
-      // Display options
-      displayMode: 'both', // 'psi', 'prob', 'both'
-      // Time evolution
-      time: 0, // femtoseconds (fs)
-      isPlaying: true,
-      simSpeed: 1.0,
+    // Global Physical Constants
+    const H = 6.62607015e-34;       // Planck constant (J*s)
+    const HBAR = 1.054571817e-34;   // Reduced Planck constant (J*s)
+    const EV_TO_J = 1.602176634e-19; // Joules per eV
+    const MASSES = {
+      electron: 9.1093837015e-31,
+      proton: 1.67262192369e-27,
+      neutron: 1.67492749804e-27,
+      muon: 9.1093837015e-31 * 206.768283
     };
 
-    // --- DOM REFERENCES ---
-    const dom = {
-      dim1D: document.getElementById('dim1D'),
-      dim2D: document.getElementById('dim2D'),
-      particleSelect: document.getElementById('particleSelect'),
-      customMassContainer: document.getElementById('customMassContainer'),
-      customMassInput: document.getElementById('customMassInput'),
-      lxRange: document.getElementById('lxRange'),
-      lxVal: document.getElementById('lxVal'),
-      lyControlContainer: document.getElementById('lyControlContainer'),
-      lyRange: document.getElementById('lyRange'),
-      lyVal: document.getElementById('lyVal'),
-      unitSelect: document.getElementById('unitSelect'),
-      nRange: document.getElementById('nRange'),
-      nVal: document.getElementById('nVal'),
-      nLabel: document.getElementById('nLabel'),
-      nyControlContainer: document.getElementById('nyControlContainer'),
-      nyRange: document.getElementById('nyRange'),
-      nyVal: document.getElementById('nyVal'),
-      superpositionSection: document.getElementById('superpositionSection'),
-      superpositionToggle: document.getElementById('superpositionToggle'),
-      superpositionControls: document.getElementById('superpositionControls'),
-      n2Range: document.getElementById('n2Range'),
-      n2Val: document.getElementById('n2Val'),
-      mixRange: document.getElementById('mixRange'),
-      mixVal: document.getElementById('mixVal'),
-      phaseRange: document.getElementById('phaseRange'),
-      phaseVal: document.getElementById('phaseVal'),
-      dispPsi: document.getElementById('dispPsi'),
-      dispProb: document.getElementById('dispProb'),
-      dispBoth: document.getElementById('dispBoth'),
-      playPauseBtn: document.getElementById('playPauseBtn'),
-      playPauseText: document.getElementById('playPauseText'),
-      resetTimeBtn: document.getElementById('resetTimeBtn'),
-      speedRange: document.getElementById('speedRange'),
-      speedVal: document.getElementById('speedVal'),
-      timeVal: document.getElementById('timeVal'),
-      presetSelect: document.getElementById('presetSelect'),
-      shareBtn: document.getElementById('shareBtn'),
-      // Views & Canvases
-      canvas1D: document.getElementById('canvas1D'),
-      container2D: document.getElementById('container2D'),
-      heatmap2D: document.getElementById('heatmap2D'),
-      three3DContainer: document.getElementById('three3DContainer'),
-      energyCanvas: document.getElementById('energyCanvas'),
-      // Text Readouts
-      viewTitleText: document.getElementById('viewTitleText'),
-      viewSubtitle: document.getElementById('viewSubtitle'),
-      nodeCount: document.getElementById('nodeCount'),
-      antinodeCount: document.getElementById('antinodeCount'),
-      parityLabel: document.getElementById('parityLabel'),
-      energyeV: document.getElementById('energyeV'),
-      energyJoules: document.getElementById('energyJoules'),
-      transitionWavelength: document.getElementById('transitionWavelength'),
-      transitionRegion: document.getElementById('transitionRegion'),
-      expX: document.getElementById('expX'),
-      sigmaX: document.getElementById('sigmaX'),
-      expP: document.getElementById('expP'),
-      sigmaP: document.getElementById('sigmaP'),
-      heisenbergVal: document.getElementById('heisenbergVal'),
-      heisenbergRatio: document.getElementById('heisenbergRatio'),
-      energyFormulaDisplay: document.getElementById('energyFormulaDisplay'),
-      wavefunctionFormulaDisplay: document.getElementById('wavefunctionFormulaDisplay'),
-    };
+    // State Variables
+    let currentView = 'trial';
+    let trialChart = null;
+    let wavefunctionChart = null;
+    let densityChart = null;
 
-    // --- THREE.JS 3D SURFACE GLOBALS ---
-    let threeScene, threeCamera, threeRenderer, threeSurfaceMesh, threeControls;
-    const GRID_3D = 50;
+    let activeTrialFunc = 'sin';
+    let animationFrameId = null;
+    let isPlaying = true;
+    let animTime = 0;
+    let animSpeed = 1.0;
 
-    function initThreeJS() {
-      const container = dom.three3DContainer;
-      const width = container.clientWidth || 300;
-      const height = container.clientHeight || 300;
+    // Initialize Application
+    window.addEventListener('DOMContentLoaded', () => {
+      initTrialChart();
+      initSimulationCharts();
+      updateTrialPlot();
+      updateSimulation();
+      animate();
+    });
 
-      threeScene = new THREE.Scene();
-      threeScene.background = new THREE.Color(0x090d16);
+    // View Switcher
+    function switchView(view) {
+      currentView = view;
+      const trialSec = document.getElementById('view-trial');
+      const simSec = document.getElementById('view-simulation');
+      const trialBtn = document.getElementById('nav-trial-btn');
+      const simBtn = document.getElementById('nav-sim-btn');
 
-      threeCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-      threeCamera.position.set(2.5, 3.0, 2.5);
+      if (view === 'trial') {
+        trialSec.classList.remove('hidden');
+        simSec.classList.add('hidden');
 
-      threeRenderer = new THREE.WebGLRenderer({ antialias: true });
-      threeRenderer.setSize(width, height);
-      threeRenderer.setPixelRatio(window.devicePixelRatio);
-      container.appendChild(threeRenderer.domElement);
+        trialBtn.className = "px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30";
+        simBtn.className = "px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200";
+        updateTrialPlot();
+      } else {
+        trialSec.classList.add('hidden');
+        simSec.classList.remove('hidden');
 
-      if (THREE.OrbitControls) {
-        threeControls = new THREE.OrbitControls(threeCamera, threeRenderer.domElement);
-        threeControls.enableDamping = true;
-        threeControls.dampingFactor = 0.05;
+        simBtn.className = "px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 bg-indigo-600 text-white shadow-lg shadow-indigo-600/30";
+        trialBtn.className = "px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200";
+        updateSimulation();
       }
+    }
 
-      // Lights
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-      threeScene.add(ambientLight);
+    // =========================================================================
+    // VIEW 1: TRIAL WAVEFUNCTION GATE
+    // =========================================================================
 
-      const dirLight = new THREE.DirectionalLight(0x22d3ee, 0.8);
-      dirLight.position.set(5, 10, 7);
-      threeScene.add(dirLight);
+    function selectTrialFunction(type) {
+      activeTrialFunc = type;
 
-      // Create initial 3D Mesh
-      const geometry = new THREE.PlaneGeometry(2, 2, GRID_3D - 1, GRID_3D - 1);
-      geometry.rotateX(-Math.PI / 2);
+      const buttons = {
+        sin: { btn: 'btn-trial-sin', badge: 'badge-trial-sin' },
+        cos: { btn: 'btn-trial-cos', badge: 'badge-trial-cos' },
+        exp: { btn: 'btn-trial-exp', badge: 'badge-trial-exp' }
+      };
 
-      const material = new THREE.MeshPhongMaterial({
-        color: 0x06b6d4,
-        wireframe: true,
-        side: THREE.DoubleSide,
+      Object.keys(buttons).forEach(key => {
+        const bEl = document.getElementById(buttons[key].btn);
+        const bgEl = document.getElementById(buttons[key].badge);
+        if (key === type) {
+          bEl.className = "w-full text-left p-4 rounded-xl border border-indigo-500/50 bg-indigo-950/40 hover:bg-indigo-900/50 transition flex items-center justify-between group shadow-md";
+          bgEl.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40";
+          bgEl.innerText = "Active";
+        } else {
+          bEl.className = "w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-900/50 hover:bg-slate-800 transition flex items-center justify-between group";
+          bgEl.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-slate-800 text-slate-500";
+          bgEl.innerText = "Select";
+        }
       });
 
-      threeSurfaceMesh = new THREE.Mesh(geometry, material);
-      threeScene.add(threeSurfaceMesh);
-
-      // Box Boundary Grid Wireframe
-      const boxGeo = new THREE.BoxHelper(new THREE.Mesh(new THREE.BoxGeometry(2, 0.1, 2)), 0x334155);
-      threeScene.add(boxGeo);
+      updateTrialPlot();
     }
 
-    function update3DSurface(t) {
-      if (!threeSurfaceMesh || state.dimension !== '2D') return;
-
-      const positions = threeSurfaceMesh.geometry.attributes.position;
-      const nx = state.n1;
-      const ny = state.ny1;
-      const E = calcEnergy2D(nx, ny, state.particleMass, state.lx, state.ly);
-      const omega = E / H_BAR;
-      const phase = omega * (t * 1e-15);
-
-      let index = 0;
-      for (let i = 0; i < GRID_3D; i++) {
-        const y = i / (GRID_3D - 1); // normalized 0 to 1
-        for (let j = 0; j < GRID_3D; j++) {
-          const x = j / (GRID_3D - 1); // normalized 0 to 1
-
-          const psi = Math.sin(nx * Math.PI * x) * Math.sin(ny * Math.PI * y);
-          const val = psi * Math.cos(phase);
-
-          positions.setY(index, val * 0.8); // Scale height visually
-          index++;
+    function initTrialChart() {
+      const ctx = document.getElementById('trialChart').getContext('2d');
+      trialChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Trial Wavefunction ψ(x)',
+              data: [],
+              borderColor: '#818cf8',
+              borderWidth: 3,
+              fill: false,
+              pointRadius: 0,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: {
+              type: 'linear',
+              min: -0.1,
+              max: 1.1,
+              grid: { color: '#334155' },
+              ticks: { color: '#94a3b8' },
+              title: { display: true, text: 'Position x (in units of L)', color: '#94a3b8' }
+            },
+            y: {
+              grid: { color: '#334155' },
+              ticks: { color: '#94a3b8' },
+              title: { display: true, text: 'ψ(x)', color: '#94a3b8' }
+            }
+          },
+          plugins: {
+            legend: { labels: { color: '#f8fafc' } }
+          }
         }
-      }
-      positions.needsUpdate = true;
-      threeSurfaceMesh.geometry.computeVertexNormals();
-
-      if (threeControls) threeControls.update();
-      threeRenderer.render(threeScene, threeCamera);
+      });
     }
 
-    // --- PHYSICS HELPERS ---
-    function calcEnergy1D(n, mass, L) {
-      return (n * n * H_PLANCK * H_PLANCK) / (8 * mass * L * L);
-    }
+    function updateTrialPlot() {
+      const k = parseFloat(document.getElementById('trial-k').value);
+      document.getElementById('trial-k-val').innerText = k.toFixed(2);
 
-    function calcEnergy2D(nx, ny, mass, Lx, Ly) {
-      const Ex = (nx * nx * H_PLANCK * H_PLANCK) / (8 * mass * Lx * Lx);
-      const Ey = (ny * ny * H_PLANCK * H_PLANCK) / (8 * mass * Ly * Ly);
-      return Ex + Ey;
-    }
-
-    function formatUnit(meters) {
-      if (state.unitName === 'nm') return `${(meters * 1e9).toFixed(3)} nm`;
-      if (state.unitName === 'A') return `${(meters * 1e10).toFixed(3)} Å`;
-      if (state.unitName === 'pm') return `${(meters * 1e12).toFixed(2)} pm`;
-      return `${meters.toExponential(3)} m`;
-    }
-
-    // --- RENDER 1D CANVAS ---
-    function render1DCanvas(t) {
-      const canvas = dom.canvas1D;
-      const ctx = canvas.getContext('2d');
-      const w = canvas.width;
-      const h = canvas.height;
-
-      ctx.clearRect(0, 0, w, h);
-
-      // Draw potential wall background
-      const padX = w * 0.08;
-      const boxW = w - 2 * padX;
-      const centerY = h / 2;
-      const amplitude = h * 0.35;
-
-      // Potential Barrier Lines
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(padX, 0); ctx.lineTo(padX, h);
-      ctx.moveTo(padX + boxW, 0); ctx.lineTo(padX + boxW, h);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Baseline
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.beginPath();
-      ctx.moveTo(padX, centerY);
-      ctx.lineTo(padX + boxW, centerY);
-      ctx.stroke();
-
-      const N = 400;
-      const c1 = Math.sqrt(state.mixRatio);
-      const c2 = Math.sqrt(1 - state.mixRatio);
-
-      const E1 = calcEnergy1D(state.n1, state.particleMass, state.lx);
-      const omega1 = E1 / H_BAR;
-
-      let omega2 = 0;
-      if (state.isSuperposition) {
-        const E2 = calcEnergy1D(state.n2, state.particleMass, state.lx);
-        omega2 = E2 / H_BAR;
-      }
-
-      const tSec = t * 1e-15; // convert fs to seconds
-
-      // Calculate state values
-      const ptsPsi = [];
-      const ptsProb = [];
+      const N = 200;
+      const points = [];
 
       for (let i = 0; i <= N; i++) {
-        const xNorm = i / N;
-        const screenX = padX + xNorm * boxW;
-
-        let re = 0, im = 0;
-
-        // State 1
-        const psi1 = Math.sqrt(2) * Math.sin(state.n1 * Math.PI * xNorm);
-        const phase1 = omega1 * tSec;
-        re += c1 * psi1 * Math.cos(phase1);
-        im -= c1 * psi1 * Math.sin(phase1);
-
-        // State 2 (Superposition)
-        if (state.isSuperposition) {
-          const psi2 = Math.sqrt(2) * Math.sin(state.n2 * Math.PI * xNorm);
-          const phase2 = omega2 * tSec - state.phase;
-          re += c2 * psi2 * Math.cos(phase2);
-          im -= c2 * psi2 * Math.sin(phase2);
+        const x = i / N; // normalized 0 to 1
+        let y = 0;
+        if (activeTrialFunc === 'sin') {
+          y = Math.sin(k * Math.PI * x);
+        } else if (activeTrialFunc === 'cos') {
+          y = Math.cos(k * Math.PI * x);
+        } else if (activeTrialFunc === 'exp') {
+          y = Math.exp(k * x) - 1; // shifted slightly for visual clarity
         }
-
-        const prob = re * re + im * im; // Probability density |Psi|^2
-
-        ptsPsi.push({ x: screenX, y: centerY - re * amplitude * 0.5 });
-        ptsProb.push({ x: screenX, y: centerY - (prob / 2) * amplitude * 0.6 });
+        points.push({ x: x, y: y });
       }
 
-      // 1. Draw Probability Density Fill |Psi|^2
-      if (state.displayMode === 'prob' || state.displayMode === 'both') {
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 2.5;
+      trialChart.data.datasets[0].data = points;
 
-        ctx.beginPath();
-        ctx.moveTo(padX, centerY);
-        ptsProb.forEach(p => ctx.lineTo(p.x, p.y));
-        ctx.lineTo(padX + boxW, centerY);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      }
-
-      // 2. Draw Wavefunction Psi(x)
-      if (state.displayMode === 'psi' || state.displayMode === 'both') {
-        ctx.strokeStyle = '#22d3ee';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ptsPsi.forEach((p, idx) => {
-          if (idx === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
-        });
-        ctx.stroke();
-      }
-
-      // Highlight Nodal points for stationary state
-      if (!state.isSuperposition) {
-        ctx.fillStyle = '#f43f5e';
-        for (let k = 1; k < state.n1; k++) {
-          const nodeX = padX + (k / state.n1) * boxW;
-          ctx.beginPath();
-          ctx.arc(nodeX, centerY, 4, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-    }
-
-    // --- RENDER 2D HEATMAP CANVAS ---
-    function render2DHeatmap(t) {
-      const canvas = dom.heatmap2D;
-      const ctx = canvas.getContext('2d');
-      const w = canvas.width;
-      const h = canvas.height;
-
-      const nx = state.n1;
-      const ny = state.ny1;
-      const E = calcEnergy2D(nx, ny, state.particleMass, state.lx, state.ly);
-      const omega = E / H_BAR;
-      const phase = omega * (t * 1e-15);
-
-      const res = 60;
-      const cellW = w / res;
-      const cellH = h / res;
-
-      for (let i = 0; i < res; i++) {
-        const xNorm = i / res;
-        for (let j = 0; j < res; j++) {
-          const yNorm = j / res;
-
-          const psi = Math.sin(nx * Math.PI * xNorm) * Math.sin(ny * Math.PI * yNorm);
-          const prob = psi * psi;
-
-          // Color palette mapping (Cyan / Teal Glow)
-          const intensity = Math.floor(prob * 255);
-          const r = Math.floor(intensity * 0.1);
-          const g = Math.floor(intensity * 0.7);
-          const b = Math.floor(intensity * 0.95);
-
-          ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-          ctx.fillRect(i * cellW, j * cellH, cellW + 0.5, cellH + 0.5);
-        }
-      }
-    }
-
-    // --- RENDER ENERGY LEVEL DIAGRAM ---
-    function renderEnergyCanvas() {
-      const canvas = dom.energyCanvas;
-      const ctx = canvas.getContext('2d');
-      const w = canvas.width;
-      const h = canvas.height;
-
-      ctx.clearRect(0, 0, w, h);
-
-      const maxN = 6;
-      const E1 = calcEnergy1D(1, state.particleMass, state.lx);
-      const maxE = calcEnergy1D(maxN, state.particleMass, state.lx);
-
-      const margin = 20;
-      const usableH = h - 2 * margin;
-
-      for (let n = 1; n <= maxN; n++) {
-        const En = calcEnergy1D(n, state.particleMass, state.lx);
-        const normY = (En - E1) / (maxE - E1);
-        const y = h - margin - normY * usableH;
-
-        const isActive = (n === state.n1) || (state.isSuperposition && n === state.n2);
-
-        ctx.strokeStyle = isActive ? '#22d3ee' : '#334155';
-        ctx.lineWidth = isActive ? 3 : 1.5;
-
-        ctx.beginPath();
-        ctx.moveTo(30, y);
-        ctx.lineTo(w - 20, y);
-        ctx.stroke();
-
-        ctx.fillStyle = isActive ? '#22d3ee' : '#64748b';
-        ctx.font = '10px monospace';
-        ctx.fillText(`n=${n}`, 8, y + 3);
-      }
-    }
-
-    // --- RECALCULATE READOUTS & MATH ---
-    function updatePhysicsCalculations() {
-      let E_total = 0;
-
-      if (state.dimension === '1D') {
-        const E1 = calcEnergy1D(state.n1, state.particleMass, state.lx);
-        if (state.isSuperposition) {
-          const E2 = calcEnergy1D(state.n2, state.particleMass, state.lx);
-          E_total = state.mixRatio * E1 + (1 - state.mixRatio) * E2;
-        } else {
-          E_total = E1;
-        }
+      // Dynamic colors based on choice
+      if (activeTrialFunc === 'sin') {
+        trialChart.data.datasets[0].borderColor = '#34d399';
       } else {
-        E_total = calcEnergy2D(state.n1, state.ny1, state.particleMass, state.lx, state.ly);
+        trialChart.data.datasets[0].borderColor = '#f87171';
       }
 
-      const eEV = E_total / EV_TO_JOULES;
-      dom.energyeV.textContent = `${eEV.toFixed(3)} eV`;
-      dom.energyJoules.textContent = `${E_total.toExponential(3)} J`;
+      trialChart.update();
 
-      // Photon transition calculation (from n to n-1)
-      if (state.dimension === '1D' && state.n1 > 1 && !state.isSuperposition) {
-        const E_lower = calcEnergy1D(state.n1 - 1, state.particleMass, state.lx);
-        const deltaE = E_total - E_lower;
-        const wavelength = (H_PLANCK * SPEED_OF_LIGHT) / deltaE; // meters
-        const waveNm = wavelength * 1e9;
-        
-        dom.transitionWavelength.textContent = `λ = ${waveNm < 1000 ? waveNm.toFixed(1) + ' nm' : wavelength.toExponential(2) + ' m'}`;
-        
-        // Spectral region
-        if (waveNm >= 380 && waveNm <= 750) dom.transitionRegion.textContent = 'Visible Light Transition';
-        else if (waveNm < 380 && waveNm > 10) dom.transitionRegion.textContent = 'Ultraviolet (UV)';
-        else if (waveNm <= 10 && waveNm >= 0.01) dom.transitionRegion.textContent = 'X-Ray Region';
-        else if (waveNm < 0.01) dom.transitionRegion.textContent = 'Gamma Ray Region';
-        else dom.transitionRegion.textContent = 'Infrared / Microwave';
-      } else if (state.n1 === 1 && !state.isSuperposition) {
-        dom.transitionWavelength.textContent = 'λ = N/A';
-        dom.transitionRegion.textContent = 'Ground State';
-      } else {
-        dom.transitionWavelength.textContent = 'λ = Complex';
-        dom.transitionRegion.textContent = 'Superposition Beat Frequencies';
+      // Update Verdict Box Content
+      const verdictBox = document.getElementById('trial-verdict-box');
+      const icon = document.getElementById('trial-status-icon');
+      const title = document.getElementById('trial-status-title');
+      const desc = document.getElementById('trial-status-desc');
+      const mathExp = document.getElementById('trial-math-explanation');
+
+      if (activeTrialFunc === 'sin') {
+        verdictBox.className = "bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-6 shadow-xl space-y-3";
+        icon.className = "text-emerald-400 text-2xl font-bold";
+        icon.innerHTML = "&check;";
+        title.className = "text-lg font-bold text-emerald-300";
+        title.innerText = "Valid Wavefunction Solution";
+        desc.innerText = "Sine naturally satisfies ψ(0) = sin(0) = 0. By setting k_n L = nπ, it also satisfies ψ(L) = sin(nπ) = 0, producing valid quantized energy states!";
+        mathExp.innerHTML = `$$\\psi_n(x) = \\sqrt{\\frac{2}{L}} \\sin\\left(\\frac{n\\pi x}{L}\\right) \\quad \\text{for } n = 1, 2, 3, \\dots$$`;
+      } else if (activeTrialFunc === 'cos') {
+        verdictBox.className = "bg-rose-950/40 border border-rose-500/40 rounded-xl p-6 shadow-xl space-y-3";
+        icon.className = "text-rose-400 text-2xl font-bold";
+        icon.innerHTML = "&#10007;";
+        title.className = "text-lg font-bold text-rose-300";
+        title.innerText = "Fails Boundary Condition at x = 0";
+        desc.innerText = "At the left boundary (x = 0), cos(0) = 1 ≠ 0. This violates the boundary condition requiring ψ(0) = 0 for an infinite potential box.";
+        mathExp.innerHTML = `$$\\psi(0) = A\\cos(0) = A \\neq 0 \\quad \\implies \\text{Invalid wavefunction!}$$`;
+      } else if (activeTrialFunc === 'exp') {
+        verdictBox.className = "bg-rose-950/40 border border-rose-500/40 rounded-xl p-6 shadow-xl space-y-3";
+        icon.className = "text-rose-400 text-2xl font-bold";
+        icon.innerHTML = "&#10007;";
+        title.className = "text-lg font-bold text-rose-300";
+        title.innerText = "Fails Boundary Conditions";
+        desc.innerText = "Real exponentials e^(kx) do not naturally return to zero at x = L without violating boundary conditions at x = 0 or exploding unphysically.";
+        mathExp.innerHTML = `$$\\psi(0) = A e^0 = A \\neq 0 \\quad \\text{and} \\quad \\psi(L) = A e^{kL} \\neq 0$$`;
       }
 
-      // Quantum Observables & Uncertainty Calculation
-      const L = state.lx;
-      const n = state.n1;
-
-      const expX_val = L / 2;
-      const sigmaX_val = L * Math.sqrt((1 / 12) - (1 / (2 * Math.pow(n * Math.PI, 2))));
-      const expP_val = 0;
-      const sigmaP_val = (n * Math.PI * H_BAR) / L;
-
-      const heisenbergProduct = sigmaX_val * sigmaP_val;
-      const ratioToHbarHalf = heisenbergProduct / (H_BAR / 2);
-
-      dom.expX.textContent = formatUnit(expX_val);
-      dom.sigmaX.textContent = formatUnit(sigmaX_val);
-      dom.expP.textContent = `${expP_val.toFixed(2)} kg·m/s`;
-      dom.sigmaP.textContent = `${sigmaP_val.toExponential(2)} N·s`;
-
-      dom.heisenbergVal.textContent = `${(heisenbergProduct / H_BAR).toFixed(2)} ℏ`;
-      dom.heisenbergRatio.textContent = `${ratioToHbarHalf.toFixed(2)} × (ℏ/2)`;
-
-      // Nodes & Antinodes
-      if (state.dimension === '1D') {
-        dom.nodeCount.textContent = state.n1 - 1;
-        dom.antinodeCount.textContent = state.n1;
-        dom.parityLabel.innerHTML = `Parity: <strong class="text-slate-200">${state.n1 % 2 !== 0 ? 'Even (Symmetric)' : 'Odd (Antisymmetric)'}</strong>`;
-      } else {
-        dom.nodeCount.textContent = `${state.n1 - 1} (x), ${state.ny1 - 1} (y)`;
-        dom.antinodeCount.textContent = state.n1 * state.ny1;
-        dom.parityLabel.innerHTML = `Mode: <strong class="text-slate-200">(${state.n1}, ${state.ny1})</strong>`;
-      }
-
-      renderEnergyCanvas();
-      renderKaTeXFormulas();
-    }
-
-    function renderKaTeXFormulas() {
       if (window.renderMathInElement) {
-        renderMathInElement(document.body, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$', right: '$', display: false }
-          ],
-          throwOnError: false
-        });
+        renderMathInElement(mathExp, { delimiters: [{ left: '$$', right: '$$', display: true }] });
       }
     }
 
-    // --- UI EVENT LISTENERS ---
-    function setupEventListeners() {
-      // Dimension Tabs
-      dom.dim1D.addEventListener('click', () => {
-        state.dimension = '1D';
-        dom.dim1D.className = "py-1.5 rounded-lg font-medium text-xs text-center transition-all bg-cyan-500 text-slate-950 font-semibold shadow";
-        dom.dim2D.className = "py-1.5 rounded-lg font-medium text-xs text-center transition-all text-slate-400 hover:text-slate-200";
-        dom.canvas1D.classList.remove('hidden');
-        dom.container2D.classList.add('hidden');
-        dom.lyControlContainer.classList.add('hidden');
-        dom.nyControlContainer.classList.add('hidden');
-        dom.superpositionSection.classList.remove('hidden');
-        dom.nLabel.innerHTML = "Quantum Number ($n$)";
-        dom.viewTitleText.innerHTML = '<i class="fa-solid fa-wave-square text-cyan-400"></i> 1D Wavefunction & Probability Density';
-        dom.viewSubtitle.textContent = 'Stationary state spatial distribution with time-dependent phase evolution';
-        updatePhysicsCalculations();
-      });
+    // =========================================================================
+    // VIEW 2: QUANTUM SIMULATION (1D)
+    // =========================================================================
 
-      dom.dim2D.addEventListener('click', () => {
-        state.dimension = '2D';
-        dom.dim2D.className = "py-1.5 rounded-lg font-medium text-xs text-center transition-all bg-cyan-500 text-slate-950 font-semibold shadow";
-        dom.dim1D.className = "py-1.5 rounded-lg font-medium text-xs text-center transition-all text-slate-400 hover:text-slate-200";
-        dom.canvas1D.classList.add('hidden');
-        dom.container2D.classList.remove('hidden');
-        dom.lyControlContainer.classList.remove('hidden');
-        dom.nyControlContainer.classList.remove('hidden');
-        dom.superpositionSection.classList.add('hidden');
-        dom.nLabel.innerHTML = "Quantum Number ($n_x$)";
-        dom.viewTitleText.innerHTML = '<i class="fa-solid fa-cube text-cyan-400"></i> 2D Spatial Wavefunction & Nodal Planes';
-        dom.viewSubtitle.textContent = 'Probability density heatmap and interactive 3D potential surface view';
-        
-        setTimeout(() => {
-          if (threeRenderer) {
-            const container = dom.three3DContainer;
-            threeRenderer.setSize(container.clientWidth, container.clientHeight);
-            threeCamera.aspect = container.clientWidth / container.clientHeight;
-            threeCamera.updateProjectionMatrix();
+    function initSimulationCharts() {
+      // Wavefunction Chart
+      const ctxW = document.getElementById('wavefunctionChart').getContext('2d');
+      wavefunctionChart = new Chart(ctxW, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Re(Ψ)',
+              data: [],
+              borderColor: '#818cf8',
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.1
+            },
+            {
+              label: 'Im(Ψ)',
+              data: [],
+              borderColor: '#ec4899',
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: {
+              type: 'linear',
+              min: 0,
+              max: 1,
+              grid: { color: '#334155' },
+              ticks: { color: '#94a3b8' },
+              title: { display: true, text: 'Position x', color: '#94a3b8' }
+            },
+            y: {
+              grid: { color: '#334155' },
+              ticks: { color: '#94a3b8' },
+              title: { display: true, text: 'Ψ(x, t)', color: '#94a3b8' }
+            }
+          },
+          plugins: {
+            legend: { labels: { color: '#f8fafc' } }
           }
-        }, 50);
-
-        updatePhysicsCalculations();
-      });
-
-      // Particle Selection
-      dom.particleSelect.addEventListener('change', (e) => {
-        const val = e.target.value;
-        if (val === 'electron') state.particleMass = MASS_ELECTRON;
-        else if (val === 'proton') state.particleMass = MASS_PROTON;
-        else if (val === 'neutron') state.particleMass = MASS_NEUTRON;
-        else if (val === 'muon') state.particleMass = MASS_MUON;
-        else if (val === 'custom') {
-          dom.customMassContainer.classList.remove('hidden');
-          state.particleMass = parseFloat(dom.customMassInput.value) * MASS_ELECTRON;
         }
-        if (val !== 'custom') dom.customMassContainer.classList.add('hidden');
-        updatePhysicsCalculations();
       });
 
-      dom.customMassInput.addEventListener('input', (e) => {
-        state.particleMass = parseFloat(e.target.value) * MASS_ELECTRON;
-        updatePhysicsCalculations();
-      });
-
-      // Unit selection
-      dom.unitSelect.addEventListener('change', (e) => {
-        state.unitName = e.target.value;
-        if (state.unitName === 'nm') state.unitScale = 1.0e-9;
-        else if (state.unitName === 'A') state.unitScale = 1.0e-10;
-        else if (state.unitName === 'pm') state.unitScale = 1.0e-12;
-
-        dom.lxVal.textContent = formatUnit(state.lx);
-        dom.lyVal.textContent = formatUnit(state.ly);
-        updatePhysicsCalculations();
-      });
-
-      // Sliders & Controls
-      dom.lxRange.addEventListener('input', (e) => {
-        const val = parseFloat(e.target.value);
-        state.lx = val * state.unitScale;
-        dom.lxVal.textContent = formatUnit(state.lx);
-        updatePhysicsCalculations();
-      });
-
-      dom.lyRange.addEventListener('input', (e) => {
-        const val = parseFloat(e.target.value);
-        state.ly = val * state.unitScale;
-        dom.lyVal.textContent = formatUnit(state.ly);
-        updatePhysicsCalculations();
-      });
-
-      dom.nRange.addEventListener('input', (e) => {
-        state.n1 = parseInt(e.target.value, 10);
-        dom.nVal.textContent = state.n1;
-        updatePhysicsCalculations();
-      });
-
-      dom.nyRange.addEventListener('input', (e) => {
-        state.ny1 = parseInt(e.target.value, 10);
-        dom.nyVal.textContent = state.ny1;
-        updatePhysicsCalculations();
-      });
-
-      // Superposition Controls
-      dom.superpositionToggle.addEventListener('change', (e) => {
-        state.isSuperposition = e.target.checked;
-        if (state.isSuperposition) dom.superpositionControls.classList.remove('hidden');
-        else dom.superpositionControls.classList.add('hidden');
-        updatePhysicsCalculations();
-      });
-
-      dom.n2Range.addEventListener('input', (e) => {
-        state.n2 = parseInt(e.target.value, 10);
-        dom.n2Val.textContent = state.n2;
-        updatePhysicsCalculations();
-      });
-
-      dom.mixRange.addEventListener('input', (e) => {
-        state.mixRatio = parseFloat(e.target.value);
-        dom.mixVal.textContent = `${state.mixRatio.toFixed(2)} : ${(1 - state.mixRatio).toFixed(2)}`;
-        updatePhysicsCalculations();
-      });
-
-      dom.phaseRange.addEventListener('input', (e) => {
-        state.phase = parseFloat(e.target.value);
-        dom.phaseVal.textContent = `${state.phase.toFixed(2)} rad`;
-        updatePhysicsCalculations();
-      });
-
-      // Display Modes
-      const setDisplayMode = (mode) => {
-        state.displayMode = mode;
-        dom.dispPsi.className = mode === 'psi' ? "p-1.5 rounded-lg border border-cyan-500 bg-cyan-950/40 text-cyan-400 font-semibold text-center" : "p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center";
-        dom.dispProb.className = mode === 'prob' ? "p-1.5 rounded-lg border border-cyan-500 bg-cyan-950/40 text-cyan-400 font-semibold text-center" : "p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center";
-        dom.dispBoth.className = mode === 'both' ? "p-1.5 rounded-lg border border-cyan-500 bg-cyan-950/40 text-cyan-400 font-semibold text-center" : "p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center";
-      };
-      dom.dispPsi.addEventListener('click', () => setDisplayMode('psi'));
-      dom.dispProb.addEventListener('click', () => setDisplayMode('prob'));
-      dom.dispBoth.addEventListener('click', () => setDisplayMode('both'));
-
-      // Animation Play/Pause
-      dom.playPauseBtn.addEventListener('click', () => {
-        state.isPlaying = !state.isPlaying;
-        dom.playPauseBtn.innerHTML = state.isPlaying ? 
-          '<i class="fa-solid fa-pause"></i> <span>Pause</span>' : 
-          '<i class="fa-solid fa-play"></i> <span>Play</span>';
-      });
-
-      dom.resetTimeBtn.addEventListener('click', () => {
-        state.time = 0;
-        dom.timeVal.textContent = "t = 0.00 fs";
-      });
-
-      dom.speedRange.addEventListener('input', (e) => {
-        state.simSpeed = parseFloat(e.target.value);
-        dom.speedVal.textContent = `${state.simSpeed.toFixed(1)}x`;
-      });
-
-      // Presets Dropdown
-      dom.presetSelect.addEventListener('change', (e) => {
-        const val = e.target.value;
-        if (val === 'default') {
-          dom.dim1D.click();
-          state.n1 = 1; dom.nRange.value = 1; dom.nVal.textContent = 1;
-          state.isSuperposition = false; dom.superpositionToggle.checked = false; dom.superpositionControls.classList.add('hidden');
-        } else if (val === 'beats') {
-          dom.dim1D.click();
-          state.n1 = 1; dom.nRange.value = 1; dom.nVal.textContent = 1;
-          state.n2 = 2; dom.n2Range.value = 2; dom.n2Val.textContent = 2;
-          state.isSuperposition = true; dom.superpositionToggle.checked = true; dom.superpositionControls.classList.remove('hidden');
-        } else if (val === 'high_n') {
-          dom.dim1D.click();
-          state.n1 = 8; dom.nRange.value = 8; dom.nVal.textContent = 8;
-          state.isSuperposition = false; dom.superpositionToggle.checked = false; dom.superpositionControls.classList.add('hidden');
-        } else if (val === '2d_deg') {
-          dom.dim2D.click();
-          state.n1 = 1; dom.nRange.value = 1; dom.nVal.textContent = 1;
-          state.ny1 = 2; dom.nyRange.value = 2; dom.nyVal.textContent = 2;
-        } else if (val === '2d_aniso') {
-          dom.dim2D.click();
-          state.lx = 1.0e-9; dom.lxRange.value = 1.0; dom.lxVal.textContent = formatUnit(state.lx);
-          state.ly = 2.0e-9; dom.lyRange.value = 2.0; dom.lyVal.textContent = formatUnit(state.ly);
-        } else if (val === 'quantum_dot') {
-          dom.dim2D.click();
-          state.particleMass = 0.13 * MASS_ELECTRON; // CdSe effective electron mass
-          dom.particleSelect.value = 'custom';
-          dom.customMassContainer.classList.remove('hidden');
-          dom.customMassInput.value = '0.13';
-        }
-        updatePhysicsCalculations();
-      });
-
-      // Share Link button
-      dom.shareBtn.addEventListener('click', () => {
-        const params = new URLSearchParams({
-          dim: state.dimension,
-          n1: state.n1,
-          ny: state.ny1,
-          lx: (state.lx / state.unitScale).toFixed(2),
-          sup: state.isSuperposition ? 1 : 0,
-          n2: state.n2
-        });
-        const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-        
-        const dummy = document.createElement('textarea');
-        document.body.appendChild(dummy);
-        dummy.value = url;
-        dummy.select();
-        document.execCommand('copy');
-        document.body.removeChild(dummy);
-
-        const msg = document.createElement('div');
-        msg.className = "fixed bottom-5 right-5 bg-cyan-500 text-slate-950 font-semibold px-4 py-2 rounded-xl shadow-2xl z-50 text-xs transition-opacity";
-        msg.textContent = "State URL copied to clipboard!";
-        document.body.appendChild(msg);
-        setTimeout(() => msg.remove(), 2500);
-      });
-
-      // Resize Listener
-      window.addEventListener('resize', () => {
-        const c1D = dom.canvas1D;
-        c1D.width = c1D.clientWidth;
-        c1D.height = c1D.clientHeight;
-
-        const c2D = dom.heatmap2D;
-        c2D.width = c2D.clientWidth;
-        c2D.height = c2D.clientHeight;
-
-        const cE = dom.energyCanvas;
-        cE.width = cE.clientWidth;
-        cE.height = cE.clientHeight;
-
-        if (threeRenderer) {
-          const container = dom.three3DContainer;
-          threeRenderer.setSize(container.clientWidth, container.clientHeight);
-          threeCamera.aspect = container.clientWidth / container.clientHeight;
-          threeCamera.updateProjectionMatrix();
+      // Probability Density Chart
+      const ctxD = document.getElementById('densityChart').getContext('2d');
+      densityChart = new Chart(ctxD, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: '|Ψ(x)|^2',
+              data: [],
+              borderColor: '#34d399',
+              backgroundColor: 'rgba(52, 211, 153, 0.2)',
+              borderWidth: 2.5,
+              fill: true,
+              pointRadius: 0,
+              tension: 0.1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: {
+              type: 'linear',
+              min: 0,
+              max: 1,
+              grid: { color: '#334155' },
+              ticks: { color: '#94a3b8' },
+              title: { display: true, text: 'Position x', color: '#94a3b8' }
+            },
+            y: {
+              min: 0,
+              grid: { color: '#334155' },
+              ticks: { color: '#94a3b8' },
+              title: { display: true, text: '|Ψ(x)|^2', color: '#94a3b8' }
+            }
+          },
+          plugins: {
+            legend: { labels: { color: '#f8fafc' } }
+          }
         }
       });
     }
 
-    // --- ANIMATION LOOP ---
-    let lastTimeMark = performance.now();
+    function getBoxWidthMeters() {
+      const val = parseFloat(document.getElementById('sim-L-val').value) || 1.0;
+      const unit = document.getElementById('sim-L-unit').value;
+      if (unit === 'nm') return val * 1e-9;
+      if (unit === 'angstrom') return val * 1e-10;
+      if (unit === 'pm') return val * 1e-12;
+      return val * 1e-9;
+    }
 
-    function animate(now) {
-      requestAnimationFrame(animate);
+    function updateSimulation() {
+      const n = parseInt(document.getElementById('sim-n-slider').value);
+      document.getElementById('sim-n-val').innerText = n;
+      document.getElementById('node-count-badge').innerText = `Nodes: ${n - 1}`;
 
-      const dt = (now - lastTimeMark) * 0.001; // elapsed seconds
-      lastTimeMark = now;
+      const L_m = getBoxWidthMeters();
+      const pKey = document.getElementById('sim-particle').value;
+      const mass = MASSES[pKey] || MASSES.electron;
 
-      if (state.isPlaying) {
-        state.time += dt * 5.0 * state.simSpeed; // time step in fs
-        dom.timeVal.textContent = `t = ${state.time.toFixed(2)} fs`;
-      }
+      // Energies
+      const E1_J = (Math.PI * Math.PI * HBAR * HBAR) / (2 * mass * L_m * L_m);
+      const E1_eV = E1_J / EV_TO_J;
 
-      if (state.dimension === '1D') {
-        render1DCanvas(state.time);
+      const En_J = n * n * E1_J;
+      const En_eV = n * n * E1_eV;
+
+      // Delta E to n+1
+      const deltaE_formula_val = (2 * n + 1);
+      const deltaE_J = deltaE_formula_val * E1_J;
+      const deltaE_eV = deltaE_formula_val * E1_eV;
+
+      // Update Numerical Outputs
+      document.getElementById('val-energy-ev').innerText = `${En_eV.toFixed(3)} eV`;
+      document.getElementById('val-energy-j').innerText = `${En_J.toExponential(3)} J`;
+
+      document.getElementById('val-delta-e-ev').innerText = `${deltaE_eV.toFixed(3)} eV`;
+      document.getElementById('val-delta-e-j').innerText = `${deltaE_J.toExponential(3)} J`;
+
+      // Update Math TeX Formula Displays
+      renderMathPanels(n, E1_eV, En_eV);
+
+      // Refresh Chart Axes Limits
+      const L_val = parseFloat(document.getElementById('sim-L-val').value);
+      wavefunctionChart.options.scales.x.max = L_val;
+      densityChart.options.scales.x.max = L_val;
+
+      renderPlotsAtTime(animTime);
+    }
+
+    function renderMathPanels(n, E1_eV, En_eV) {
+      const waveEl = document.getElementById('math-wavefunction-expr');
+      const genEEl = document.getElementById('math-general-energy-formula');
+      const subEEl = document.getElementById('math-substituted-energy');
+      const deltaEEl = document.getElementById('math-delta-e-formula');
+
+      waveEl.innerHTML = `$$\\psi_{${n}}(x) = \\sqrt{\\frac{2}{L}} \\sin\\left(\\frac{${n}\\pi x}{L}\\right)$$`;
+      genEEl.innerHTML = `$$E_n = \\frac{n^2 h^2}{8 m L^2} = n^2 E_1$$`;
+
+      if (n === 1) {
+        subEEl.innerHTML = `$$E_1 = \\frac{1^2 h^2}{8 m L^2} = 1 \\cdot (${E1_eV.toFixed(3)}\\text{ eV}) = ${En_eV.toFixed(3)}\\text{ eV}$$`;
       } else {
-        render2DHeatmap(state.time);
-        update3DSurface(state.time);
+        subEEl.innerHTML = `$$E_{${n}} = \\frac{${n}^2 h^2}{8 m L^2} = ${n}^2 E_1 = ${n * n} \\times (${E1_eV.toFixed(3)}\\text{ eV}) = ${En_eV.toFixed(3)}\\text{ eV}$$`;
+      }
+
+      deltaEEl.innerHTML = `$$\\Delta E_{n+1, n} = E_{n+1} - E_n = (2n + 1) E_1$$`;
+
+      if (window.renderMathInElement) {
+        [waveEl, genEEl, subEEl, deltaEEl].forEach(el => {
+          renderMathInElement(el, { delimiters: [{ left: '$$', right: '$$', display: true }] });
+        });
       }
     }
 
-    // --- INITIALIZATION ---
-    window.onload = function() {
-      // Set canvas display resolutions
-      const c1D = dom.canvas1D;
-      c1D.width = c1D.clientWidth || 600;
-      c1D.height = c1D.clientHeight || 350;
+    function renderPlotsAtTime(t) {
+      const n = parseInt(document.getElementById('sim-n-slider').value);
+      const L_val = parseFloat(document.getElementById('sim-L-val').value);
 
-      const c2D = dom.heatmap2D;
-      c2D.width = c2D.clientWidth || 300;
-      c2D.height = c2D.clientHeight || 300;
+      const N = 200;
+      const waveRe = [];
+      const waveIm = [];
+      const density = [];
 
-      const cE = dom.energyCanvas;
-      cE.width = cE.clientWidth || 150;
-      cE.height = cE.clientHeight || 200;
+      const norm = Math.sqrt(2 / L_val);
+      const omega = n * n * 0.5; // Scaled phase angular frequency for visualization
 
-      initThreeJS();
-      setupEventListeners();
-      updatePhysicsCalculations();
+      for (let i = 0; i <= N; i++) {
+        const x = (i / N) * L_val;
+        const spatial = norm * Math.sin((n * Math.PI * x) / L_val);
 
-      // Start loop
-      requestAnimationFrame(animate);
-    };
+        const re = spatial * Math.cos(omega * t);
+        const im = -spatial * Math.sin(omega * t);
+        const prob = spatial * spatial;
+
+        waveRe.push({ x: x, y: re });
+        waveIm.push({ x: x, y: im });
+        density.push({ x: x, y: prob });
+      }
+
+      wavefunctionChart.data.datasets[0].data = waveRe;
+      wavefunctionChart.data.datasets[1].data = waveIm;
+      wavefunctionChart.update();
+
+      densityChart.data.datasets[0].data = density;
+      densityChart.update();
+    }
+
+    function toggleAnimation() {
+      isPlaying = !isPlaying;
+      document.getElementById('btn-play-pause').innerText = isPlaying ? "Pause" : "Play";
+    }
+
+    function updateSpeedLabel() {
+      animSpeed = parseFloat(document.getElementById('sim-speed').value);
+      document.getElementById('speed-label').innerText = `${animSpeed.toFixed(1)}x`;
+    }
+
+    function animate() {
+      if (isPlaying && currentView === 'simulation') {
+        animTime += 0.03 * animSpeed;
+        renderPlotsAtTime(animTime);
+      }
+      animationFrameId = requestAnimationFrame(animate);
+    }
   </script>
 </body>
 </html>
