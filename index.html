@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quantum Particle in a Box - Educational Explorer</title>
-  
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -23,15 +23,11 @@
 
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  
+
   <!-- KaTeX for Math Rendering -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
-  
-  <!-- Three.js for 3D Surface Rendering -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
   <style>
     body {
@@ -99,7 +95,7 @@
 
       <div class="max-w-3xl space-y-3 mb-6">
         <span class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-950 text-yellow-400 border border-yellow-800/80 inline-block">
-          <i class="fa-solid fa-lock text-yellow-400 mr-1"></i> Pedagogical Challenge
+          <i class="fa-solid fa-lock text-yellow-400 mr-1"></i> Wavefunction Test
         </span>
         <h2 class="text-2xl font-bold text-white">Select the Valid Spatial Wavefunction $\psi(x)$</h2>
         <p class="text-sm text-slate-300 leading-relaxed">
@@ -112,7 +108,7 @@
 
       <!-- Candidate Function Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        
+
         <!-- Sine Option -->
         <div id="cardSine" class="glass-card p-5 rounded-2xl border border-slate-700 hover:border-cyan-400 cursor-pointer transition-all space-y-3 relative group">
           <div class="flex justify-between items-center">
@@ -123,9 +119,6 @@
             $$\psi(x) = A \sin(k x)$$
           </div>
           <p class="text-xs text-slate-400">Symmetric/Antisymmetric oscillatory solutions.</p>
-          <button class="w-full py-2 bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 rounded-xl text-xs font-semibold transition-all">
-            Test Sine Function
-          </button>
         </div>
 
         <!-- Cosine Option -->
@@ -138,9 +131,6 @@
             $$\psi(x) = A \cos(k x)$$
           </div>
           <p class="text-xs text-slate-400">Even oscillatory function candidate.</p>
-          <button class="w-full py-2 bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white rounded-xl text-xs font-semibold transition-all">
-            Test Cosine Function
-          </button>
         </div>
 
         <!-- Exponential Option -->
@@ -153,16 +143,13 @@
             $$\psi(x) = A e^{k x}$$
           </div>
           <p class="text-xs text-slate-400">Exponential growth or decay candidate.</p>
-          <button class="w-full py-2 bg-purple-500/20 hover:bg-purple-500 text-purple-300 hover:text-white rounded-xl text-xs font-semibold transition-all">
-            Test Exponential
-          </button>
         </div>
 
       </div>
 
       <!-- Live Trial Visualizer Canvas & Physical Analysis Box -->
       <div id="gateAnalysisBox" class="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-950/80 p-5 rounded-2xl border border-slate-800">
-        
+
         <!-- Plot Canvas -->
         <div class="lg:col-span-7 h-64 bg-slate-900/90 rounded-xl border border-slate-800 relative overflow-hidden flex flex-col justify-between p-2">
           <span class="text-[11px] font-mono text-slate-400">Boundary Compliance Test View ($x=0$ to $x=L$)</span>
@@ -183,7 +170,7 @@
 
           <div id="unlockContainer" class="hidden border-t border-slate-800 pt-3">
             <button id="unlockSimBtn" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 text-sm">
-              <i class="fa-solid fa-lock-open"></i> Proceed to Quantum Simulation
+              <i class="fa-solid fa-lock-open"></i> Proceed to Example
             </button>
           </div>
         </div>
@@ -193,25 +180,16 @@
     </div>
   </section>
 
-  <!-- MAIN SIMULATION WORKSPACE (LOCKED UNTIL SINE SELECTION OR UNLOCKED) -->
+  <!-- MAIN SIMULATION WORKSPACE -->
   <main id="mainSimulationSection" class="hidden flex-1 p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1800px] w-full mx-auto">
-    
+
     <!-- LEFT SIDEBAR: Controls & Parameters -->
     <aside class="lg:col-span-4 xl:col-span-3 space-y-5">
-      
+
       <div class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
         <h2 class="text-base font-semibold text-cyan-400 flex items-center gap-2 border-b border-slate-800 pb-2">
           <i class="fa-solid fa-sliders"></i> System Parameters
         </h2>
-
-        <!-- Dimension Switch -->
-        <div>
-          <label class="text-xs font-medium text-slate-400 block mb-1.5">Dimension Setup</label>
-          <div class="grid grid-cols-2 gap-2 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
-            <button id="dim1D" class="py-1.5 rounded-lg font-medium text-xs text-center transition-all bg-cyan-500 text-slate-950 font-semibold shadow">1D Line</button>
-            <button id="dim2D" class="py-1.5 rounded-lg font-medium text-xs text-center transition-all text-slate-400 hover:text-slate-200">2D Box</button>
-          </div>
-        </div>
 
         <!-- Particle Mass Selection -->
         <div>
@@ -229,7 +207,7 @@
           </div>
         </div>
 
-        <!-- Box Dimensions (Lx, Ly) -->
+        <!-- Box Dimensions (Lx) -->
         <div class="space-y-3">
           <div>
             <div class="flex justify-between items-center text-xs mb-1">
@@ -245,14 +223,6 @@
               </select>
             </div>
           </div>
-
-          <div id="lyControlContainer" class="hidden">
-            <div class="flex justify-between items-center text-xs mb-1">
-              <span class="text-slate-300 font-medium">Box Height ($L_y$)</span>
-              <span id="lyVal" class="text-cyan-400 font-mono">1.00 nm</span>
-            </div>
-            <input type="range" id="lyRange" min="0.1" max="10" step="0.05" value="1.0" class="w-full">
-          </div>
         </div>
 
         <!-- Quantum Numbers Controls -->
@@ -263,14 +233,6 @@
               <span id="nVal" class="text-cyan-400 font-mono font-bold text-sm">1</span>
             </div>
             <input type="range" id="nRange" min="1" max="10" step="1" value="1" class="w-full">
-            
-            <div id="nyControlContainer" class="hidden mt-2">
-              <div class="flex justify-between items-center text-xs mb-1">
-                <span class="text-slate-300 font-medium">Quantum Number ($n_y$)</span>
-                <span id="nyVal" class="text-cyan-400 font-mono font-bold text-sm">1</span>
-              </div>
-              <input type="range" id="nyRange" min="1" max="10" step="1" value="1" class="w-full">
-            </div>
           </div>
         </div>
 
@@ -315,8 +277,8 @@
         <div class="border-t border-slate-800 pt-3 space-y-2">
           <label class="text-xs font-medium text-slate-400 block">Visualization Display</label>
           <div class="grid grid-cols-3 gap-1.5 text-xs">
-            <button id="dispPsi" class="p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center">$\psi(x)$</button>
-            <button id="dispProb" class="p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center">$|\psi|^2$</button>
+            <button id="dispPsi" class="p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center font-medium">$\psi(x)$</button>
+            <button id="dispProb" class="p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center font-medium">$|\psi|^2$</button>
             <button id="dispBoth" class="p-1.5 rounded-lg border border-cyan-500 bg-cyan-950/40 text-cyan-400 text-center font-semibold">Both</button>
           </div>
         </div>
@@ -349,10 +311,10 @@
 
     <!-- RIGHT MAIN CONTENT: Visualization Canvas & Analytical Cards -->
     <section class="lg:col-span-8 xl:col-span-9 space-y-6">
-      
+
       <!-- TOP VISUALIZATION CANVAS -->
       <div class="glass-panel rounded-2xl p-5 shadow-2xl relative min-h-[420px] flex flex-col justify-between">
-        
+
         <div class="flex flex-wrap items-center justify-between gap-3 mb-2 z-10">
           <div>
             <h2 id="viewTitleText" class="text-lg font-semibold text-slate-100 flex items-center gap-2">
@@ -373,20 +335,7 @@
 
         <!-- Canvas Container -->
         <div class="relative w-full flex-1 min-h-[320px] my-2 bg-slate-950/80 rounded-xl border border-slate-800/80 overflow-hidden flex items-center justify-center">
-          <!-- 1D Canvas -->
           <canvas id="canvas1D" class="w-full h-full absolute inset-0 block"></canvas>
-
-          <!-- 2D Canvas & ThreeJS View -->
-          <div id="container2D" class="hidden absolute inset-0 w-full h-full grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
-            <div class="relative bg-slate-900/90 rounded-lg overflow-hidden border border-slate-800 flex flex-col">
-              <span class="absolute top-2 left-2 z-10 text-[11px] font-semibold bg-slate-950/80 px-2 py-0.5 rounded text-cyan-400 border border-slate-800">2D Intensity Heatmap ($|\psi|^2$)</span>
-              <canvas id="heatmap2D" class="w-full h-full block"></canvas>
-            </div>
-            <div class="relative bg-slate-900/90 rounded-lg overflow-hidden border border-slate-800 flex flex-col">
-              <span class="absolute top-2 left-2 z-10 text-[11px] font-semibold bg-slate-950/80 px-2 py-0.5 rounded text-cyan-400 border border-slate-800">3D Surface View (Drag to rotate)</span>
-              <div id="three3DContainer" class="w-full h-full"></div>
-            </div>
-          </div>
         </div>
 
         <!-- Canvas Metrics Overlay Footer -->
@@ -403,18 +352,17 @@
 
       </div>
 
-      <!-- LOWER ANALYTICS: ENERGY FORMULAS & OBSERVABLES -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
+      <!-- LOWER ANALYTICS: ENERGY FORMULAS -->
+      <div class="grid grid-cols-1">
         <!-- Energy Card -->
-        <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
+        <div class="glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
           <div>
             <h3 class="text-sm font-semibold text-cyan-400 border-b border-slate-800 pb-2 flex items-center justify-between">
               <span><i class="fa-solid fa-bolt"></i> Energy</span>
               <span class="text-[11px] text-slate-400 font-normal">Eigenvalue $E_n$ & Wavefunction</span>
             </h3>
 
-            <div class="space-y-3 mt-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
               <!-- Sine Wavefunction Expression -->
               <div class="glass-card p-3 rounded-xl border-l-4 border-l-cyan-400">
                 <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">Active Spatial Wavefunction</span>
@@ -443,8 +391,8 @@
           </div>
 
           <!-- General Energy & Level Spacing Formulas -->
-          <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center border-b border-slate-800 pb-2">
+          <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 text-xs space-y-2 mt-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center">
               <div>
                 <span class="text-[10px] text-slate-400 block font-semibold uppercase">General Energy Formula</span>
                 <div id="genEnergyMath" class="py-1">$$E_n = \frac{n^2 h^2}{8 m L^2} = \frac{n^2 \pi^2 \hbar^2}{2 m L^2}$$</div>
@@ -455,54 +403,7 @@
               </div>
             </div>
           </div>
-
         </div>
-
-        <!-- Observables & Uncertainty Principle -->
-        <div class="lg:col-span-6 glass-panel rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between">
-          <h3 class="text-sm font-semibold text-cyan-400 border-b border-slate-800 pb-2 flex items-center justify-between">
-            <span><i class="fa-solid fa-calculator"></i> Observables & Heisenberg Uncertainty</span>
-            <span class="text-[11px] text-emerald-400 font-normal"><i class="fa-solid fa-check-circle"></i> Verified</span>
-          </h3>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div class="glass-card p-3 rounded-xl">
-              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Position Expectation $\langle x \rangle$</span>
-              <div id="expX" class="text-base font-bold font-mono text-cyan-300 mt-1">0.50 nm</div>
-              <span class="text-[10px] text-slate-500">Box midpoint</span>
-            </div>
-
-            <div class="glass-card p-3 rounded-xl">
-              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Position Uncertainty $\sigma_x$</span>
-              <div id="sigmaX" class="text-base font-bold font-mono text-cyan-300 mt-1">0.18 nm</div>
-              <span class="text-[10px] text-slate-500">Spatial dispersion</span>
-            </div>
-
-            <div class="glass-card p-3 rounded-xl">
-              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Momentum $\langle p \rangle$</span>
-              <div id="expP" class="text-base font-bold font-mono text-cyan-300 mt-1">0.00 kg·m/s</div>
-              <span class="text-[10px] text-slate-500">Standing wave symmetry</span>
-            </div>
-
-            <div class="glass-card p-3 rounded-xl">
-              <span class="text-[10px] text-slate-400 font-semibold block uppercase">Momentum Uncertainty $\sigma_p$</span>
-              <div id="sigmaP" class="text-base font-bold font-mono text-purple-300 mt-1">3.3e-25 N·s</div>
-              <span class="text-[10px] text-slate-500">RMS momentum</span>
-            </div>
-          </div>
-
-          <!-- Heisenberg Product Box -->
-          <div class="glass-card p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/10">
-            <div class="flex justify-between items-center">
-              <span class="text-[10px] text-emerald-400 font-semibold uppercase">Heisenberg Uncertainty Product $\sigma_x \cdot \sigma_p$</span>
-              <span id="heisenbergRatio" class="text-[10px] bg-emerald-900/60 text-emerald-300 px-2 py-0.5 rounded font-mono">1.14 × (ℏ/2)</span>
-            </div>
-            <div id="heisenbergVal" class="text-base font-bold font-mono text-emerald-300 mt-1">0.60 ℏ</div>
-            <div class="text-[10px] text-slate-400 mt-0.5">Satisfies $\sigma_x \sigma_p \ge \frac{\hbar}{2}$ ($\frac{\hbar}{2} \approx 5.27 \times 10^{-35}\text{ J·s}$)</div>
-          </div>
-
-        </div>
-
       </div>
 
     </section>
@@ -529,14 +430,11 @@
     const state = {
       isUnlocked: false,
       selectedTrial: null,
-      dimension: '1D',
       particleMass: MASS_ELECTRON,
       lx: 1.0e-9, // meters (1 nm)
-      ly: 1.0e-9,
       unitScale: 1.0e-9,
       unitName: 'nm',
       n1: 1,
-      ny1: 1,
       isSuperposition: false,
       n2: 2,
       mixRatio: 0.5,
@@ -564,23 +462,15 @@
       unlockSimBtn: document.getElementById('unlockSimBtn'),
 
       // Controls
-      dim1D: document.getElementById('dim1D'),
-      dim2D: document.getElementById('dim2D'),
       particleSelect: document.getElementById('particleSelect'),
       customMassContainer: document.getElementById('customMassContainer'),
       customMassInput: document.getElementById('customMassInput'),
       lxRange: document.getElementById('lxRange'),
       lxVal: document.getElementById('lxVal'),
-      lyControlContainer: document.getElementById('lyControlContainer'),
-      lyRange: document.getElementById('lyRange'),
-      lyVal: document.getElementById('lyVal'),
       unitSelect: document.getElementById('unitSelect'),
       nRange: document.getElementById('nRange'),
       nVal: document.getElementById('nVal'),
       nLabel: document.getElementById('nLabel'),
-      nyControlContainer: document.getElementById('nyControlContainer'),
-      nyRange: document.getElementById('nyRange'),
-      nyVal: document.getElementById('nyVal'),
       superpositionSection: document.getElementById('superpositionSection'),
       superpositionToggle: document.getElementById('superpositionToggle'),
       superpositionControls: document.getElementById('superpositionControls'),
@@ -602,9 +492,6 @@
 
       // Canvases
       canvas1D: document.getElementById('canvas1D'),
-      container2D: document.getElementById('container2D'),
-      heatmap2D: document.getElementById('heatmap2D'),
-      three3DContainer: document.getElementById('three3DContainer'),
 
       // Outputs
       viewTitleText: document.getElementById('viewTitleText'),
@@ -616,73 +503,11 @@
       specificEnergyFormula: document.getElementById('specificEnergyFormula'),
       energyJoules: document.getElementById('energyJoules'),
       levelDistanceFormula: document.getElementById('levelDistanceFormula'),
-      expX: document.getElementById('expX'),
-      sigmaX: document.getElementById('sigmaX'),
-      expP: document.getElementById('expP'),
-      sigmaP: document.getElementById('sigmaP'),
-      heisenbergVal: document.getElementById('heisenbergVal'),
-      heisenbergRatio: document.getElementById('heisenbergRatio'),
     };
-
-    // --- THREE.JS GLOBALS ---
-    let threeScene, threeCamera, threeRenderer, threeMesh, threeControls;
-
-    function initThreeJS() {
-      const container = dom.three3DContainer;
-      const width = container.clientWidth || 300;
-      const height = container.clientHeight || 300;
-
-      threeScene = new THREE.Scene();
-      threeScene.background = new THREE.Color(0x090d16);
-
-      threeCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-      threeCamera.position.set(2.5, 3.0, 2.5);
-
-      threeRenderer = new THREE.WebGLRenderer({ antialias: true });
-      threeRenderer.setSize(width, height);
-      threeRenderer.setPixelRatio(window.devicePixelRatio);
-      container.appendChild(threeRenderer.domElement);
-
-      if (window.THREE && THREE.OrbitControls) {
-        threeControls = new THREE.OrbitControls(threeCamera, threeRenderer.domElement);
-        threeControls.enableDamping = true;
-        threeControls.dampingFactor = 0.05;
-      }
-
-      const geom = new THREE.PlaneGeometry(2, 2, 40, 40);
-      const mat = new THREE.MeshBasicMaterial({ color: 0x22d3ee, wireframe: true, side: THREE.DoubleSide });
-      threeMesh = new THREE.Mesh(geom, mat);
-      threeMesh.rotation.x = -Math.PI / 2;
-      threeScene.add(threeMesh);
-    }
-
-    function update3DSurface(t) {
-      if (!threeMesh) return;
-      const pos = threeMesh.geometry.attributes.position;
-      const nx = state.n1;
-      const ny = state.ny1;
-
-      for (let i = 0; i < pos.count; i++) {
-        const u = (pos.getX(i) + 1) / 2; // 0 to 1
-        const v = (pos.getY(i) + 1) / 2; // 0 to 1
-
-        const psi = Math.sin(nx * Math.PI * u) * Math.sin(ny * Math.PI * v);
-        pos.setZ(i, psi * 0.6);
-      }
-      pos.needsUpdate = true;
-      if (threeControls) threeControls.update();
-      threeRenderer.render(threeScene, threeCamera);
-    }
 
     // --- PHYSICS HELPER CALCULATIONS ---
     function calcEnergy1D(n, m, L) {
       return (n * n * H_PLANCK * H_PLANCK) / (8 * m * L * L);
-    }
-
-    function calcEnergy2D(nx, ny, m, Lx, Ly) {
-      const Ex = (nx * nx * H_PLANCK * H_PLANCK) / (8 * m * Lx * Lx);
-      const Ey = (ny * ny * H_PLANCK * H_PLANCK) / (8 * m * Ly * Ly);
-      return Ex + Ey;
     }
 
     function formatUnit(meters) {
@@ -694,10 +519,9 @@
     function selectCandidate(type) {
       state.selectedTrial = type;
 
-      // Update card borders
-      dom.cardSine.className = type === 'sine' ? "glass-card p-5 rounded-2xl border-2 border-cyan-400 bg-cyan-950/20 transition-all space-y-3 relative" : "glass-card p-5 rounded-2xl border border-slate-700 opacity-60 transition-all space-y-3 relative";
-      dom.cardCos.className = type === 'cos' ? "glass-card p-5 rounded-2xl border-2 border-red-400 bg-red-950/20 transition-all space-y-3 relative" : "glass-card p-5 rounded-2xl border border-slate-700 opacity-60 transition-all space-y-3 relative";
-      dom.cardExp.className = type === 'exp' ? "glass-card p-5 rounded-2xl border-2 border-purple-400 bg-purple-950/20 transition-all space-y-3 relative" : "glass-card p-5 rounded-2xl border border-slate-700 opacity-60 transition-all space-y-3 relative";
+      dom.cardSine.className = type === 'sine' ? "glass-card p-5 rounded-2xl border-2 border-cyan-400 bg-cyan-950/25 transition-all space-y-3 relative cursor-pointer" : "glass-card p-5 rounded-2xl border border-slate-700 opacity-60 transition-all space-y-3 relative cursor-pointer";
+      dom.cardCos.className = type === 'cos' ? "glass-card p-5 rounded-2xl border-2 border-red-400 bg-red-950/25 transition-all space-y-3 relative cursor-pointer" : "glass-card p-5 rounded-2xl border border-slate-700 opacity-60 transition-all space-y-3 relative cursor-pointer";
+      dom.cardExp.className = type === 'exp' ? "glass-card p-5 rounded-2xl border-2 border-purple-400 bg-purple-950/25 transition-all space-y-3 relative cursor-pointer" : "glass-card p-5 rounded-2xl border border-slate-700 opacity-60 transition-all space-y-3 relative cursor-pointer";
 
       renderGateCanvas();
 
@@ -726,6 +550,7 @@
 
     function renderGateCanvas() {
       const canvas = dom.gateCanvas;
+      if (!canvas) return;
       canvas.width = canvas.clientWidth;
       canvas.height = canvas.clientHeight;
       const ctx = canvas.getContext('2d');
@@ -739,7 +564,6 @@
       const centerY = h / 2;
       const amp = h * 0.35;
 
-      // Draw barriers
       ctx.fillStyle = 'rgba(239, 68, 68, 0.12)';
       ctx.fillRect(0, 0, padX, h);
       ctx.fillRect(padX + boxW, 0, w - (padX + boxW), h);
@@ -751,7 +575,6 @@
       ctx.moveTo(padX + boxW, 0); ctx.lineTo(padX + boxW, h);
       ctx.stroke();
 
-      // Zero Baseline
       ctx.strokeStyle = 'rgba(255,255,255,0.15)';
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -777,7 +600,6 @@
         pts.push({ x: screenX, y: centerY - val * amp, val: val });
       }
 
-      // Draw curve
       ctx.strokeStyle = type === 'sine' ? '#22d3ee' : (type === 'cos' ? '#ef4444' : '#a855f7');
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -786,40 +608,12 @@
         else ctx.lineTo(p.x, p.y);
       });
       ctx.stroke();
-
-      // Boundary Violation Markers
-      const leftPass = Math.abs(pts[0].val) < 0.02;
-      const rightPass = Math.abs(pts[pts.length - 1].val) < 0.02;
-
-      const drawMarker = (p, isPass, label) => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-        ctx.fillStyle = isPass ? '#10b981' : '#ef4444';
-        ctx.fill();
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        if (!isPass) {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 12, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-
-          ctx.fillStyle = '#ef4444';
-          ctx.font = 'bold 11px sans-serif';
-          ctx.fillText(`Fails ${label}`, p.x + (p.x < w/2 ? 12 : -70), p.y - 10);
-        }
-      };
-
-      drawMarker(pts[0], leftPass, 'x=0');
-      drawMarker(pts[pts.length - 1], rightPass, 'x=L');
     }
 
     // --- MAIN SIMULATION RENDERERS ---
     function render1DCanvas(t) {
       const canvas = dom.canvas1D;
+      if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const w = canvas.width;
       const h = canvas.height;
@@ -831,7 +625,6 @@
       const centerY = h / 2;
       const amplitude = h * 0.35;
 
-      // Barrier shading
       ctx.fillStyle = 'rgba(239, 68, 68, 0.08)';
       ctx.fillRect(0, 0, padX, h);
       ctx.fillRect(padX + boxW, 0, w - (padX + boxW), h);
@@ -915,70 +708,28 @@
       }
     }
 
-    function render2DHeatmap(t) {
-      const canvas = dom.heatmap2D;
-      const ctx = canvas.getContext('2d');
-      const w = canvas.width;
-      const h = canvas.height;
-
-      const imgData = ctx.createImageData(w, h);
-      const data = imgData.data;
-
-      const nx = state.n1;
-      const ny = state.ny1;
-
-      for (let py = 0; py < h; py++) {
-        const yNorm = py / h;
-        const sinY = Math.sin(ny * Math.PI * yNorm);
-
-        for (let px = 0; px < w; px++) {
-          const xNorm = px / w;
-          const sinX = Math.sin(nx * Math.PI * xNorm);
-
-          const psi = sinX * sinY;
-          const prob = psi * psi; // 0 to 1
-
-          const idx = (py * w + px) * 4;
-          data[idx] = Math.floor(prob * 34);     // R
-          data[idx + 1] = Math.floor(prob * 211); // G
-          data[idx + 2] = Math.floor(prob * 238); // B
-          data[idx + 3] = 255;
-        }
-      }
-      ctx.putImageData(imgData, 0, 0);
-    }
-
     // --- CALCULATIONS & MATH UPDATES ---
     function updatePhysicsCalculations() {
       if (!state.isUnlocked) return;
 
       const E1 = calcEnergy1D(1, state.particleMass, state.lx);
       const n = state.n1;
-
-      let E_current = 0;
-      if (state.dimension === '1D') {
-        E_current = calcEnergy1D(n, state.particleMass, state.lx);
-      } else {
-        E_current = calcEnergy2D(n, state.ny1, state.particleMass, state.lx, state.ly);
-      }
+      const E_current = calcEnergy1D(n, state.particleMass, state.lx);
 
       const eEV = E_current / EV_TO_JOULES;
       const E1_eV = E1 / EV_TO_JOULES;
       const nSq = n * n;
 
-      // Active Sine Spatial Wavefunction Display
       dom.wavefunctionFormula.innerHTML = `$$\\psi_{${n}}(x) = \\sqrt{\\frac{2}{L}} \\sin\\left(\\frac{${n} \\pi x}{L}\\right)$$`;
 
-      // Active state energy derivation
       if (n === 1) {
         dom.specificEnergyFormula.innerHTML = `$$E_1 = \\frac{1^2 h^2}{8 m L^2} = 1 \\cdot E_1 = ${E1_eV.toFixed(3)}\\text{ eV}$$`;
       } else {
         dom.specificEnergyFormula.innerHTML = `$$E_${n} = \\frac{${n}^2 h^2}{8 m L^2} = ${nSq} \\cdot E_1 = ${nSq} \\cdot (${E1_eV.toFixed(3)}\\text{ eV}) = ${eEV.toFixed(3)}\\text{ eV}$$`;
       }
-      
+
       dom.energyJoules.textContent = `Exact Value: ${E_current.toExponential(4)} J`;
 
-      // Level Distance Formula Display (for n and n+1)
       const nextN = n + 1;
       const deltaE_joules = calcEnergy1D(nextN, state.particleMass, state.lx) - calcEnergy1D(n, state.particleMass, state.lx);
       const deltaE_eV = deltaE_joules / EV_TO_JOULES;
@@ -986,34 +737,9 @@
 
       dom.levelDistanceFormula.innerHTML = `$$\\Delta E_{${nextN}, ${n}} = (2\\cdot${n} + 1) E_1 = ${spacingFactor} E_1 = ${deltaE_eV.toFixed(3)}\\text{ eV} \\quad (${deltaE_joules.toExponential(3)}\\text{ J})$$`;
 
-      // Observables & Uncertainty
-      const L = state.lx;
-      const expX_val = L / 2;
-      const sigmaX_val = L * Math.sqrt((1 / 12) - (1 / (2 * Math.pow(n * Math.PI, 2))));
-      const expP_val = 0;
-      const sigmaP_val = (n * Math.PI * H_BAR) / L;
-
-      const heisenbergProduct = sigmaX_val * sigmaP_val;
-      const ratioToHbarHalf = heisenbergProduct / (H_BAR / 2);
-
-      dom.expX.textContent = formatUnit(expX_val);
-      dom.sigmaX.textContent = formatUnit(sigmaX_val);
-      dom.expP.textContent = `${expP_val.toFixed(2)} kg·m/s`;
-      dom.sigmaP.textContent = `${sigmaP_val.toExponential(2)} N·s`;
-
-      dom.heisenbergVal.textContent = `${(heisenbergProduct / H_BAR).toFixed(2)} ℏ`;
-      dom.heisenbergRatio.textContent = `${ratioToHbarHalf.toFixed(2)} × (ℏ/2)`;
-
-      // Nodes & Antinodes
-      if (state.dimension === '1D') {
-        dom.nodeCount.textContent = n - 1;
-        dom.antinodeCount.textContent = n;
-        dom.parityLabel.innerHTML = `Parity: <strong class="text-slate-200">${n % 2 !== 0 ? 'Even (Symmetric)' : 'Odd (Antisymmetric)'}</strong>`;
-      } else {
-        dom.nodeCount.textContent = `${n - 1} (x), ${state.ny1 - 1} (y)`;
-        dom.antinodeCount.textContent = n * state.ny1;
-        dom.parityLabel.innerHTML = `Mode: <strong class="text-slate-200">(${n}, ${state.ny1})</strong>`;
-      }
+      dom.nodeCount.textContent = n - 1;
+      dom.antinodeCount.textContent = n;
+      dom.parityLabel.innerHTML = `Parity: <strong class="text-slate-200">${n % 2 !== 0 ? 'Even (Symmetric)' : 'Odd (Antisymmetric)'}</strong>`;
 
       renderKaTeXFormulas();
     }
@@ -1032,12 +758,10 @@
 
     // --- EVENT LISTENERS ---
     function setupEventListeners() {
-      // Candidate Card Clicks
       dom.cardSine.addEventListener('click', () => selectCandidate('sine'));
       dom.cardCos.addEventListener('click', () => selectCandidate('cos'));
       dom.cardExp.addEventListener('click', () => selectCandidate('exp'));
 
-      // Unlock simulation button
       dom.unlockSimBtn.addEventListener('click', () => {
         state.isUnlocked = true;
         dom.trialGateSection.classList.add('hidden');
@@ -1048,23 +772,10 @@
           const c1D = dom.canvas1D;
           c1D.width = c1D.clientWidth;
           c1D.height = c1D.clientHeight;
-
-          const c2D = dom.heatmap2D;
-          c2D.width = c2D.clientWidth;
-          c2D.height = c2D.clientHeight;
-
-          if (threeRenderer) {
-            const container = dom.three3DContainer;
-            threeRenderer.setSize(container.clientWidth, container.clientHeight);
-            threeCamera.aspect = container.clientWidth / container.clientHeight;
-            threeCamera.updateProjectionMatrix();
-          }
-
           updatePhysicsCalculations();
         }, 50);
       });
 
-      // Navigation Mode Switch
       dom.gateReturnBtn.addEventListener('click', () => {
         if (state.isUnlocked && !dom.trialGateSection.classList.contains('hidden')) {
           dom.trialGateSection.classList.add('hidden');
@@ -1075,42 +786,17 @@
         }
       });
 
-      // Controls
-      dom.dim1D.addEventListener('click', () => {
-        state.dimension = '1D';
-        dom.dim1D.className = "py-1.5 rounded-lg font-medium text-xs text-center transition-all bg-cyan-500 text-slate-950 font-semibold shadow";
-        dom.dim2D.className = "py-1.5 rounded-lg font-medium text-xs text-center transition-all text-slate-400 hover:text-slate-200";
-        dom.canvas1D.classList.remove('hidden');
-        dom.container2D.classList.add('hidden');
-        dom.lyControlContainer.classList.add('hidden');
-        dom.nyControlContainer.classList.add('hidden');
-        dom.superpositionSection.classList.remove('hidden');
-        dom.nLabel.innerHTML = "Quantum Number ($n$)";
-        updatePhysicsCalculations();
-      });
+      // Display Mode Button Listeners Fix
+      const setActiveDisplayBtn = (mode) => {
+        state.displayMode = mode;
+        dom.dispPsi.className = mode === 'psi' ? "p-1.5 rounded-lg border border-cyan-500 bg-cyan-950/40 text-cyan-400 text-center font-semibold" : "p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center font-medium";
+        dom.dispProb.className = mode === 'prob' ? "p-1.5 rounded-lg border border-cyan-500 bg-cyan-950/40 text-cyan-400 text-center font-semibold" : "p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center font-medium";
+        dom.dispBoth.className = mode === 'both' ? "p-1.5 rounded-lg border border-cyan-500 bg-cyan-950/40 text-cyan-400 text-center font-semibold" : "p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-cyan-400 text-center font-medium";
+      };
 
-      dom.dim2D.addEventListener('click', () => {
-        state.dimension = '2D';
-        dom.dim2D.className = "py-1.5 rounded-lg font-medium text-xs text-center transition-all bg-cyan-500 text-slate-950 font-semibold shadow";
-        dom.dim1D.className = "py-1.5 rounded-lg font-medium text-xs text-center transition-all text-slate-400 hover:text-slate-200";
-        dom.canvas1D.classList.add('hidden');
-        dom.container2D.classList.remove('hidden');
-        dom.lyControlContainer.classList.remove('hidden');
-        dom.nyControlContainer.classList.remove('hidden');
-        dom.superpositionSection.classList.add('hidden');
-        dom.nLabel.innerHTML = "Quantum Number ($n_x$)";
-        
-        setTimeout(() => {
-          if (threeRenderer) {
-            const container = dom.three3DContainer;
-            threeRenderer.setSize(container.clientWidth, container.clientHeight);
-            threeCamera.aspect = container.clientWidth / container.clientHeight;
-            threeCamera.updateProjectionMatrix();
-          }
-        }, 50);
-
-        updatePhysicsCalculations();
-      });
+      dom.dispPsi.addEventListener('click', () => setActiveDisplayBtn('psi'));
+      dom.dispProb.addEventListener('click', () => setActiveDisplayBtn('prob'));
+      dom.dispBoth.addEventListener('click', () => setActiveDisplayBtn('both'));
 
       dom.particleSelect.addEventListener('change', (e) => {
         const val = e.target.value;
@@ -1138,7 +824,6 @@
         else if (state.unitName === 'pm') state.unitScale = 1.0e-12;
 
         dom.lxVal.textContent = formatUnit(state.lx);
-        dom.lyVal.textContent = formatUnit(state.ly);
         updatePhysicsCalculations();
       });
 
@@ -1148,21 +833,9 @@
         updatePhysicsCalculations();
       });
 
-      dom.lyRange.addEventListener('input', (e) => {
-        state.ly = parseFloat(e.target.value) * state.unitScale;
-        dom.lyVal.textContent = formatUnit(state.ly);
-        updatePhysicsCalculations();
-      });
-
       dom.nRange.addEventListener('input', (e) => {
         state.n1 = parseInt(e.target.value, 10);
         dom.nVal.textContent = state.n1;
-        updatePhysicsCalculations();
-      });
-
-      dom.nyRange.addEventListener('input', (e) => {
-        state.ny1 = parseInt(e.target.value, 10);
-        dom.nyVal.textContent = state.ny1;
         updatePhysicsCalculations();
       });
 
@@ -1227,17 +900,6 @@
           const c1D = dom.canvas1D;
           c1D.width = c1D.clientWidth;
           c1D.height = c1D.clientHeight;
-
-          const c2D = dom.heatmap2D;
-          c2D.width = c2D.clientWidth;
-          c2D.height = c2D.clientHeight;
-
-          if (threeRenderer) {
-            const container = dom.three3DContainer;
-            threeRenderer.setSize(container.clientWidth, container.clientHeight);
-            threeCamera.aspect = container.clientWidth / container.clientHeight;
-            threeCamera.updateProjectionMatrix();
-          }
         }
       });
     }
@@ -1256,20 +918,14 @@
       }
 
       if (state.isUnlocked && !dom.mainSimulationSection.classList.contains('hidden')) {
-        if (state.dimension === '1D') {
-          render1DCanvas(state.time);
-        } else {
-          render2DHeatmap(state.time);
-          update3DSurface(state.time);
-        }
+        render1DCanvas(state.time);
       }
     }
 
     // --- INITIALIZATION ---
     window.onload = function() {
-      initThreeJS();
       setupEventListeners();
-      selectCandidate('sine'); // default selection in trial mode
+      selectCandidate('sine');
       renderKaTeXFormulas();
       requestAnimationFrame(animate);
     };
